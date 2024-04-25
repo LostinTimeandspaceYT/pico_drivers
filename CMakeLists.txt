@@ -23,12 +23,14 @@ add_executable(${NAME}
 # Include directories
 add_subdirectory(./i2c)
 add_subdirectory(./ap33772)
+add_subdirectory(./stusb4500)
 
 
 target_link_libraries(${NAME}
 pico_stdlib
 i2c
 ap33772
+stusb4500
 )
 
 
