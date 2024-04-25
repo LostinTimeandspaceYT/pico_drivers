@@ -82,14 +82,14 @@ struct bool_pair {
 struct register32_t {
     union {
         uint32_t value;
-        uint8_t bytes[4];
+        uint8_t arr[4];
     };
 };
 
 struct register16_t {
     union {
         uint16_t value;
-        uint8_t bytes[2];
+        uint8_t arr[2];
     };
 };
 
