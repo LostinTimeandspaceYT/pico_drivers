@@ -1,6 +1,8 @@
 # Pico Drivers
 *A compilation of drivers I have written for RP2040 projects*
 
+The drivers are organized by general use case.
+
 
 ## USB-PD
 
@@ -22,7 +24,7 @@ Driver for the AP33772, a high performance USB-PD Sink Controller. The module I 
 
 [Datasheet](https://www.diodes.com/part/view/AP33772/)
 
-[USB SINK CLICK 2: MIKROE ELECTRONICS](https://www.mikroe.com/usb-c-sink-2-click)
+[USB sink click 2: Mikroe Electronics](https://www.mikroe.com/usb-c-sink-2-click)
 
 
 ### STUSB4500
@@ -31,9 +33,11 @@ Driver for the STUSB4500, a USB-PD Sink Controller made by STMicroelectronics. T
 
 
 *via Mikroe Electronics*
+>the STUSB4500, a USB-C sink-only controller compatible with Power-Delivery (PD) from STMicroelectronics. It supports dead battery mode to allow a system to be powered from an external source directly, establishes a valid source-to-sink connection, and negotiates a USB power delivery (PD) contract with a PD capable source device.
+>
 > the STUSB4500, a USB-C sink-only controller compatible with Power-Delivery (PD) from STMicroelectronics. Based on the default power profiles (PDO) configuration stored in internal non-volatile memory, the stand-alone controller STUSB4500 implements proprietary algorithms to negotiate a Power Delivery contract with a source without any internal or external software support (Auto-Run Mode), making it the ideal device for automatic High Power Profile charging, especially from a Dead Battery Power state.
 >
->he STUSB4500 communicates with MCU using the standard I2C interface that supports transfers up to 400 Kbit/s (Fast Mode) used to configure, control, and read the status of the device. It also has the possibility of the USB Power Delivery communication over CC1 and CC2 configuration channel pins used for connection and attachment detection, plug orientation determination, and system configuration management across USB Type-C cable. Four 7-bit device address is available by default (0x28 or 0x29 or 0x2A or 0x2B) depending on the setting of the address pin ADDR0 and ADDR1. 
+>The STUSB4500 communicates with MCU using the standard I2C interface that supports transfers up to 400 Kbit/s (Fast Mode) used to configure, control, and read the status of the device. It also has the possibility of the USB Power Delivery communication over CC1 and CC2 configuration channel pins used for connection and attachment detection, plug orientation determination, and system configuration management across USB Type-C cable. Four 7-bit device address is available by default (0x28 or 0x29 or 0x2A or 0x2B) depending on the setting of the address pin ADDR0 and ADDR1. 
 
 **Links:**
 
