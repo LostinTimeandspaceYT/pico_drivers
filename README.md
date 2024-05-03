@@ -1,8 +1,41 @@
 # Pico Drivers
 *A compilation of drivers I have written for RP2040 projects*
 
-The drivers are organized by general use case.
 
+## Tmux Debug Script
+*A script used to simplify the debugging process without the need for an IDE*
+
+### Prerequisites
+
+- `tmux` (obviously)
+
+you can install tmux with the following command:
+
+#### Debian/Ubuntu
+
+```sh
+sudo apt install tmux
+```
+
+### Fedora
+
+```sh
+sudo dnf install tmux
+```
+
+For more information on using tmux, run `man tmux`.
+
+When using the `tmux_debug.sh` to debug, be sure `openocd` can be run with sudo privileges and without need for a password. This can be done by performing the following steps:
+
+1. run `sudo visudo`
+2. add the following line to your `/etc/sudoers`:
+    `user_name ALL=(ALL) NOPASSWD:/usr/bin/openocd`
+    **Note:** replace `user_name` with your username.
+3. Save the file.
+
+
+
+# Drivers
 
 ## USB-PD
 
