@@ -17,7 +17,7 @@ you can install tmux with the following command:
 sudo apt install tmux
 ```
 
-### Fedora
+#### Fedora
 
 ```sh
 sudo dnf install tmux
