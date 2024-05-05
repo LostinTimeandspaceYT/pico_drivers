@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.13)
 
 set(NAME my_project) # <-- change as needed.
 
-# initialize the SDK based on PICO_SDK_PATH
-# note: this must happen before project()
+# initialize the SDK based on PICO_SDK_PATH note: this must happen before
+# project()
 include(pico_sdk_import.cmake)
 
 # boilerplate
@@ -15,35 +15,23 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 # Add source files here
-add_executable(${NAME} 
-    main.cpp # <-- add source files here!
+add_executable(${NAME} main.cpp # <-- add source files here!
 )
-
 
 # Include directories
 add_subdirectory(./i2c)
 add_subdirectory(./ap33772)
 add_subdirectory(./stusb4500)
+add_subdirectory(./ssd1306)
 
-
-target_link_libraries(${NAME}
-pico_stdlib
-i2c
-ap33772
-stusb4500
-)
-
-
+target_link_libraries(${NAME} pico_stdlib i2c ap33772 stusb4500 ssd1306)
 
 # create map/bin/hex/uf2 file in addition to ELF
 pico_add_extra_outputs(${NAME})
 
 # Set up files for the release packages
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.uf2
-    ${CMAKE_CURRENT_LIST_DIR}/README.md
-    DESTINATION .
-)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.uf2
+              ${CMAKE_CURRENT_LIST_DIR}/README.md DESTINATION .)
 
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_GENERATOR "ZIP" "TGZ")
