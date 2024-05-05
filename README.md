@@ -37,7 +37,76 @@ When using the `tmux_debug.sh` to debug, be sure `openocd` can be run with sudo 
 
 # Drivers
 
+## Displays
+
+*LCDs, OLEDs, Seven-Segment LEDs, Bar-graph LEDs, and more...*
+
+### SSD1306: OLED Display Driver
+
+Library for SSD1306 OLED display driver based on the works presented in the official [pico examples](https://github.com/raspberrypi/pico-examples/tree/master/i2c/ssd1306_i2c) and this [repo](https://github.com/MR-Addict/Pi-Pico-SSD1306-C-Library/tree/main). I have made this library compatible with the `I2C` wrapper class presented in this repository.
+
+#### Displaying Text
+
+```cpp
+#include "ssd1306.hpp"
+
+int main() {
+    OLED oled = OLED(128, 64, true);
+    oled.print(0,0, (uint8_t*)"Hello World!");
+    oled.show();
+    return 0;
+}
+```
+
+
+#### Drawing Shapes
+
+```cpp
+#include "ssd1306.hpp"
+
+int main() {
+    OLED oled = OLED(128, 64, true);
+
+    // Draws an outline of the shape
+    oled.draw_rectangle(0, 0, 50, 30);
+
+    // Draws a solid of the shape
+    oled.draw_filled_circle(64, 32, 10);
+
+    oled.show();
+
+    return 0;
+}
+```
+
+
+#### Drawing Images
+
+```cpp
+#include "ssd1306.hpp"
+#include "bitmap.hpp"
+
+int main() {
+    OLED oled = OLED(128, 64, true);
+
+    oled.drawBitmap(0, 0, 32, 32, temperature_32x32);
+    oled.show();
+
+    return 0;
+}
+```
+
+
+#### Other Cool Stuff
+
+- You can create your own [custom fonts](http://oleddisplay.squix.ch/#/home).
+
+- You can modifty characters using the [Adafruit Font Customizer](https://tchapi.github.io/Adafruit-GFX-Font-Customiser/).
+
+
 ## USB-PD
+
+*For projects that require high amounts of power, USB-PD can be a great option for battery chargers, LED drivers, Power banks, and more...*
 
 ### AP33772: USB-PD Sink Controller
 
@@ -60,7 +129,7 @@ Driver for the AP33772, a high performance USB-PD Sink Controller. The module I 
 [USB sink click 2: Mikroe Electronics](https://www.mikroe.com/usb-c-sink-2-click)
 
 
-### STUSB4500
+### STUSB4500: USB-PD Sink Controller
 
 Driver for the STUSB4500, a USB-PD Sink Controller made by STMicroelectronics. The module I used for writing this code was the [USB Sink Click from Mikroe Electronics](https://www.mikroe.com/usb-c-sink-click)
 
@@ -78,3 +147,15 @@ Driver for the STUSB4500, a USB-PD Sink Controller made by STMicroelectronics. T
 
 [USB Sink Click: Mikroe Electronics](https://www.mikroe.com/usb-c-sink-2-click)
 
+### TPS25750: DRP USB-PD Controller
+
+THE TPS25750 is Dual Role Port (DRP) USB-PD controller with integrated power paths with support for dead-battery mode. The module I used for writing the code was the [USB Power Click from Mikroe Electronics](https://www.mikroe.com/usb-c-power-click). The TPS25750 includes a number of GPIO pins for additional customization such as indictator LEDs or switches.
+
+**NOTE:** This library is a WIP.
+
+*via Texas Instruments*
+>The TPS25750 is a highly integrated stand-alone USB Type-C and Power Delivery (PD) controller optimized for applications supporting USB-C PD Power. The TPS25750 integrates fully managed power paths with robust protection for a complete USB-C PD solution. The TPS25750 also integrates control for external battery charger ICs for added ease of use and reduced time to market.
+
+ [Link to datasheet:](https://www.ti.com/lit/ds/symlink/tps25750.pdf?ts=1714726260022&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTPS25750%253FkeyMatch%253DTPS25750%2526tisearch%253Dsearch-everything%2526usecase%253DGPN-ALT)
+ 
+ [Link to Host Interface Technical Reference Manual:](https://www.ti.com/lit/ug/slvuc05a/slvuc05a.pdf?ts=1714750459366&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTPS25750)
