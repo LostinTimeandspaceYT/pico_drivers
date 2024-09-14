@@ -1,6 +1,12 @@
 # Pico Drivers
 *A compilation of drivers I have written for RP2040 projects*
 
+## Updates
+
+**09/14/24**
+I was able to compile my drivers on the new version of the sdk. I was not able to get the vscode extension to import the project properly. The error arises from `ninja` failing to create the necessary build files for cross-compilation. Current workaround is to create a new project and manually copy the code over.
+Tmux script still functions as intented.
+
 
 ## Tmux Debug Script
 *A script used to simplify the debugging process without the need for an IDE*
