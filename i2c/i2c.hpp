@@ -21,7 +21,7 @@
 
 class I2C {
 private:
-  i2c_inst_t *i2c = PICO_DEFAULT_I2C_INSTANCE;
+  i2c_inst_t *i2c = PICO_DEFAULT_I2C;
   uint sda = I2C_DEFAULT_SDA;
   uint scl = I2C_DEFAULT_SCL;
   uint interrupt = PIN_UNUSED;
