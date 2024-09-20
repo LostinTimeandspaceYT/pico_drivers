@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <stdio.h>
 
+#include "ush/microshell.h"
+
 /* Debug Symbols */
 #define DEBUG_AP33772 (false)
 #define DEBUG_STUSB4500 (false)
@@ -26,6 +28,58 @@ void setup(void);
 void forever_blink(void);
 void scan_i2c_bus();
 
+
+// working buffers allocations (size could be customized)
+#define BUF_IN_SIZE    32
+#define BUF_OUT_SIZE   32
+#define PATH_MAX_SIZE  32
+
+static char ush_in_buf[BUF_IN_SIZE];
+static char ush_out_buf[BUF_OUT_SIZE];
+
+
+// root directory handler
+static struct ush_node_object root;
+
+// microshell instance handler
+static struct ush_object ush;
+
+
+// non-blocking read interface
+static int ush_read(struct ush_object *self, char *ch)
+{
+    // should be implemented as a FIFO
+    if (stdio_get_until(ch, 1, PICO_ERROR_TIMEOUT)> 0) {
+        *ch = getchar();
+        return 1;
+    }
+    return 0;
+}
+
+// non-blocking write interface
+static int ush_write(struct ush_object *self, char ch)
+{
+    // should be implemented as a FIFO
+    return (printf("%c", ch) == 1);
+}
+
+// I/O interface descriptor
+static const struct ush_io_interface ush_iface = {
+    .read = ush_read,
+    .write = ush_write,
+};
+
+// microshell descriptor
+static const struct ush_descriptor ush_desc = {
+    .io = &ush_iface,                           // I/O interface pointer
+    .input_buffer = ush_in_buf,                 // working input buffer
+    .input_buffer_size = sizeof(ush_in_buf),    // working input buffer size
+    .output_buffer = ush_out_buf,               // working output buffer
+    .output_buffer_size = sizeof(ush_out_buf),  // working output buffer size
+    .path_max_length = PATH_MAX_SIZE,           // path maximum length (stack)
+    .hostname = "Pico2",                      // hostname (in prompt)
+};
+
 int main() {
 
   setup();
@@ -35,7 +89,10 @@ int main() {
   oled.print(0, 36, (uint8_t *)"Hello World!");
   oled.show();
 
-  forever_blink();
+  while (1) {
+    // ush_service(&ush);
+    forever_blink();
+  }
 
   return 0;
 }
@@ -49,6 +106,10 @@ void setup(void) {
   gpio_init(PICO_DEFAULT_LED_PIN);
   gpio_set_dir(PICO_DEFAULT_LED_PIN, true);
   gpio_put(PICO_DEFAULT_LED_PIN, 1);
+
+  ush_init(&ush, &ush_desc);
+
+  // ush_node_mount(&ush, "/", &root, NULL, 0);
 }
 
 void forever_blink(void) {

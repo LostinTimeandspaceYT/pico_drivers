@@ -15,6 +15,7 @@ endif()
 cmake_minimum_required(VERSION 3.13)
 
 set(NAME my_project) # <-- change as needed.
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 # initialize the SDK based on PICO_SDK_PATH note: this must happen before
 # project()
@@ -37,8 +38,16 @@ add_subdirectory(./i2c)
 add_subdirectory(./ap33772)
 add_subdirectory(./stusb4500)
 add_subdirectory(./ssd1306)
+add_subdirectory(./ush)
 
-target_link_libraries(${NAME} pico_stdlib i2c ap33772 stusb4500 ssd1306)
+target_link_libraries(${NAME} 
+    pico_stdlib 
+    i2c 
+    ap33772 
+    stusb4500 
+    ssd1306 
+    ush
+)
 
 # create map/bin/hex/uf2 file in addition to ELF
 pico_add_extra_outputs(${NAME})
