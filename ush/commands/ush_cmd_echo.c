@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "ush.h"
-#include "ush_internal.h"
-#include "ush_utils.h"
+#include "../ush.h"
+#include "../ush_internal.h"
+#include "../ush_utils.h"
 
 #include <string.h>
 

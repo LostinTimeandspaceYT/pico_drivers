@@ -30,11 +30,37 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 
-link_directories(ush)
-add_subdirectory(./ush)
-
 # Add source files here
 add_executable(${NAME} main.cpp # <-- add source files here!
+  ush/ush.c
+  ush/ush_read.c
+  ush/ush_read_utils.c
+  ush/ush_read_char.c
+  ush/ush_parse.c
+  ush/ush_parse_char.c
+  ush/ush_parse_utils.c
+  ush/ush_write.c
+  ush/ush_write_utils.c
+  ush/ush_prompt.c
+  ush/ush_reset.c
+  ush/ush_file.c
+  ush/ush_node.c
+  ush/ush_node_utils.c
+  ush/ush_node_mount.c
+  ush/ush_utils.c
+  ush/ush_commands.c
+  ush/ush_process.c
+  ush/ush_autocomp.c
+  ush/ush_autocomp_utils.c
+  ush/ush_autocomp_state.c
+  ush/commands/ush_cmd.c
+  ush/commands/ush_cmd_cd.c
+  ush/commands/ush_cmd_help.c
+  ush/commands/ush_cmd_ls.c
+  ush/commands/ush_cmd_pwd.c
+  ush/commands/ush_cmd_cat.c
+  ush/commands/ush_cmd_xxd.c
+  ush/commands/ush_cmd_echo.c
 )
 
 # Include directories
@@ -42,7 +68,11 @@ add_subdirectory(./i2c)
 add_subdirectory(./ap33772)
 add_subdirectory(./stusb4500)
 add_subdirectory(./ssd1306)
+add_subdirectory(./ush)
 
+# Modify the below lines to enable/disable output over UART/USB
+pico_enable_stdio_uart(${NAME} 0)
+pico_enable_stdio_usb(${NAME} 1)
 
 
 target_link_libraries(${NAME} 

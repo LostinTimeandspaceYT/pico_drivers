@@ -3,13 +3,14 @@
 #include "ssd1306/bitmap.hpp"
 #include <cstdint>
 #include <stdio.h>
+#include <string.h>
 
 #include "ush/microshell.h"
 
 /* Debug Symbols */
 #define DEBUG_AP33772 (false)
 #define DEBUG_STUSB4500 (false)
-#define DEBUG_SSD1306 (true)
+#define DEBUG_SSD1306 (false)
 
 #if DEBUG_AP33772
 #include "ap33772/ap33772.hpp"
@@ -78,22 +79,186 @@ static const struct ush_descriptor ush_desc = {
     .hostname = "Pico2",                      // hostname (in prompt)
 };
 
+// toggle file execute callback
+static void toggle_exec_callback(struct ush_object *self, struct ush_file_descriptor const *file, int argc, char *argv[])
+{
+    // simple toggle led, without any arguments validation
+    gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN));
+}
+
+// reboot cmd file execute callback
+static void reboot_exec_callback(struct ush_object *self, struct ush_file_descriptor const *file, int argc, char *argv[])
+{
+#if defined(ARDUINO_ARCH_ESP32)
+    ESP.restart();
+#elif defined(ARDUINO_ARCH_AVR)
+    void (*reset)(void) = 0;
+    reset();
+#else
+    ush_print(self, "error: reboot not supported...");
+#endif
+}
+
+// set file execute callback
+static void set_exec_callback(struct ush_object *self, struct ush_file_descriptor const *file, int argc, char *argv[])
+{
+    // arguments count validation
+    if (argc != 2) {
+        // return predefined error message
+        ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+        return;
+    }
+
+    // arguments validation
+    if (strcmp(argv[1], "1") == 0) {
+        // turn led on
+        gpio_put(PICO_DEFAULT_LED_PIN, 1);
+    } else if (strcmp(argv[1], "0") == 0) {
+        // turn led off
+        gpio_put(PICO_DEFAULT_LED_PIN, 0);
+    } else {
+        // return predefined error message
+        ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+        return;
+    }
+}
+
+// info file get data callback
+size_t info_get_data_callback(struct ush_object *self, struct ush_file_descriptor const *file, uint8_t **data)
+{
+    static const char *info = "Use MicroShell and make fun!\r\n";
+
+    // return pointer to data
+    *data = (uint8_t*)info;
+    // return data size
+    return strlen(info);
+}
+
+// led file get data callback
+size_t led_get_data_callback(struct ush_object *self, struct ush_file_descriptor const *file, uint8_t **data)
+{
+    // read current led state
+    bool state = gpio_get(PICO_DEFAULT_LED_PIN);
+    // return pointer to data
+    *data = (uint8_t*)((state) ? "1\r\n" : "0\r\n");
+    // return data size
+    return strlen((char*)(*data));
+}
+
+// led file set data callback
+void led_set_data_callback(struct ush_object *self, struct ush_file_descriptor const *file, uint8_t *data, size_t size)
+{
+    // data size validation
+    if (size < 1)
+        return;
+
+    // arguments validation
+    if (data[0] == '1') {
+        // turn led on
+      gpio_put(PICO_DEFAULT_LED_PIN, 1);
+    } else if (data[0] == '0') {
+        // turn led off
+      gpio_put(PICO_DEFAULT_LED_PIN, 0);
+    }
+}
+
+// time file get data callback
+size_t time_get_data_callback(struct ush_object *self, struct ush_file_descriptor const *file, uint8_t **data)
+{
+    static char time_buf[16];
+    // read current time
+    long current_time = millis();
+    // convert
+    snprintf(time_buf, sizeof(time_buf), "%ld\r\n", current_time);
+    time_buf[sizeof(time_buf) - 1] = 0;
+    // return pointer to data
+    *data = (uint8_t*)time_buf;
+    // return data size
+    return strlen((char*)(*data));
+}
+
+// root directory files descriptor
+static const struct ush_file_descriptor root_files[] = {
+    {
+        .name = "info.txt",                     // info.txt file name
+        .description = NULL,
+        .help = NULL,
+        .exec = NULL,
+        .get_data = info_get_data_callback,
+    }
+};
+
+// bin directory files descriptor
+static const struct ush_file_descriptor bin_files[] = {
+    {
+        .name = "toggle",                       // toggle file name
+        .description = "toggle led",            // optional file description
+        .help = "usage: toggle\r\n",            // optional help manual
+        .exec = toggle_exec_callback,           // optional execute callback
+    },
+    {
+        .name = "set",                          // set file name
+        .description = "set led",
+        .help = "usage: set {0,1}\r\n",
+        .exec = set_exec_callback
+    },
+};
+
+// dev directory files descriptor
+static const struct ush_file_descriptor dev_files[] = {
+    {
+        .name = "led",
+        .description = NULL,
+        .help = NULL,
+        .exec = NULL,
+        .get_data = led_get_data_callback,      // optional data getter callback
+        .set_data = led_set_data_callback,      // optional data setter callback
+    },
+    {
+        .name = "time",
+        .description = NULL,
+        .help = NULL,
+        .exec = NULL,
+        .get_data = time_get_data_callback,
+    },
+};
+
+// cmd files descriptor
+static const struct ush_file_descriptor cmd_files[] = {
+    {
+        .name = "reboot",
+        .description = "reboot device",
+        .help = NULL,
+        .exec = reboot_exec_callback,
+    },
+};
 
 // root directory handler
 static struct ush_node_object root;
+// dev directory handler
+static struct ush_node_object dev;
+// bin directory handler
+static struct ush_node_object bin;
+
+// cmd commands handler
+static struct ush_node_object cmd;
+
 
 int main() {
 
   setup();
+
+#if DEBUG_SSD1306
   scan_i2c_bus();
   OLED oled = OLED(64, 128, true);
   oled.draw_bitmap(0, 0, 40, 32, sun_with_clouds_40x32);
   oled.print(0, 36, (uint8_t *)"Hello World!");
   oled.show();
+#endif
 
   while (1) {
-    // ush_service(&ush);
-    forever_blink();
+    ush_service(&ush);
+    // forever_blink();
   }
 
   return 0;
@@ -110,9 +275,9 @@ void setup(void) {
   gpio_put(PICO_DEFAULT_LED_PIN, 1);
 
   //FIXME: Why is this causing a linker error?
-  // ush_init(&ush, &ush_desc);
+  ush_init(&ush, &ush_desc);
 
-  // ush_node_mount(&ush, "/", &root, NULL, 0);
+  ush_node_mount(&ush, "/", &root, NULL, 0);
 }
 
 void forever_blink(void) {

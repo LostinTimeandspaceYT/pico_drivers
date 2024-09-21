@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "ush_types.h"
-#include "ush_preconfig.h"
+#include "../ush_types.h"
+#include "../ush_preconfig.h"
 
 #if USH_CONFIG_ENABLE_FEATURE_COMMANDS == 1
 
