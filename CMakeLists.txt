@@ -29,6 +29,10 @@ set(CMAKE_CXX_STANDARD 17)
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+
+link_directories(ush)
+add_subdirectory(./ush)
+
 # Add source files here
 add_executable(${NAME} main.cpp # <-- add source files here!
 )
@@ -38,7 +42,8 @@ add_subdirectory(./i2c)
 add_subdirectory(./ap33772)
 add_subdirectory(./stusb4500)
 add_subdirectory(./ssd1306)
-add_subdirectory(./ush)
+
+
 
 target_link_libraries(${NAME} 
     pico_stdlib 

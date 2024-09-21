@@ -38,8 +38,6 @@ static char ush_in_buf[BUF_IN_SIZE];
 static char ush_out_buf[BUF_OUT_SIZE];
 
 
-// root directory handler
-static struct ush_node_object root;
 
 // microshell instance handler
 static struct ush_object ush;
@@ -80,6 +78,10 @@ static const struct ush_descriptor ush_desc = {
     .hostname = "Pico2",                      // hostname (in prompt)
 };
 
+
+// root directory handler
+static struct ush_node_object root;
+
 int main() {
 
   setup();
@@ -107,7 +109,8 @@ void setup(void) {
   gpio_set_dir(PICO_DEFAULT_LED_PIN, true);
   gpio_put(PICO_DEFAULT_LED_PIN, 1);
 
-  ush_init(&ush, &ush_desc);
+  //FIXME: Why is this causing a linker error?
+  // ush_init(&ush, &ush_desc);
 
   // ush_node_mount(&ush, "/", &root, NULL, 0);
 }
