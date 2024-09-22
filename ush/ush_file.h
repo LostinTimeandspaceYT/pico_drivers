@@ -33,18 +33,19 @@ extern "C" {
 
 /**
  * @brief Search file by name.
- * 
+ *
  * Function searches file with given name relative to the current working path.
  * First it is looks for file in commands global namespaces.
  * Next it is looks for file in current working path.
  * Name could be absolute or relative.
- * 
+ *
  * @param self - pointer to master ush object
  * @param name - pointer to file name to search
- * 
+ *
  * @return pointer to ush file descriptor when successful, otherwise NULL
  */
-struct ush_file_descriptor const* ush_file_find_by_name(struct ush_object *self, const char *name);
+struct ush_file_descriptor const *ush_file_find_by_name(struct ush_object *self,
+                                                        const char *name);
 
 #ifdef __cplusplus
 }

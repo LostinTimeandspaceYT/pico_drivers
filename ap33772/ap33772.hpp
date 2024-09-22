@@ -30,7 +30,7 @@ enum AP33772_CMDS {
   CMD_TR50 = 0x2A,
   CMD_TR75 = 0x2C,
   CMD_TR100 = 0x2E,
-  CMD_RDO = 0x30, // 0x30 - 0x33
+  CMD_RDO = 0x30,  // 0x30 - 0x33
   CMD_VID = 0x34
 };
 
@@ -59,12 +59,12 @@ struct AP33772_STATUS {
     uint8_t read_status;
   };
 
-  uint8_t read_voltage; // LSB: 80mV
-  uint8_t read_current; // LSB: 24mA
-  uint8_t read_temp;    // unit: 1C
+  uint8_t read_voltage;  // LSB: 80mV
+  uint8_t read_current;  // LSB: 24mA
+  uint8_t read_temp;     // unit: 1C
 };
 
-struct AP33772_EVENT_FLAG { // used when reading the status of the IC
+struct AP33772_EVENT_FLAG {  // used when reading the status of the IC
   union {
     struct {
       uint8_t new_neg_success : 1;
@@ -91,22 +91,21 @@ struct AP33772_EVENT_FLAG { // used when reading the status of the IC
 struct PDO_DATA {
   union {
     struct {
-      uint32_t max_current : 10; // unit: 10mA
-      uint32_t voltage : 10;     // unit: 50mV
-      uint32_t reserved_1 : 10;  // shall be set to zero
-      uint32_t type : 2;         // 00b - Fixed supply
+      uint32_t max_current : 10;  // unit: 10mA
+      uint32_t voltage : 10;      // unit: 50mV
+      uint32_t reserved_1 : 10;   // shall be set to zero
+      uint32_t type : 2;          // 00b - Fixed supply
     } fixed;
 
     struct {
-      uint32_t max_current : 7; // unit: 50mA
-      uint32_t reserved_2 : 1;  // shall be set to zero
-      uint32_t min_voltage : 8; // unit: 100mV
-      uint32_t reserved_1 : 1;  // shall be set to zero
-      uint32_t max_voltage : 8; // unit: 100mV
-      uint32_t reserved : 3;    // shall be set to zero
-      uint32_t
-          type : 2; // 00b - Programmable Power Supply (01b .. 11b reserved)
-      uint32_t apdo : 2; // 11b - Augmented Power Data Object (APDO)
+      uint32_t max_current : 7;  // unit: 50mA
+      uint32_t reserved_2 : 1;   // shall be set to zero
+      uint32_t min_voltage : 8;  // unit: 100mV
+      uint32_t reserved_1 : 1;   // shall be set to zero
+      uint32_t max_voltage : 8;  // unit: 100mV
+      uint32_t reserved : 3;     // shall be set to zero
+      uint32_t type : 2;         // 00b - Programmable Power Supply (01b .. 11b reserved)
+      uint32_t apdo : 2;         // 11b - Augmented Power Data Object (APDO)
     } pps;
 
     struct {
@@ -122,20 +121,20 @@ struct PDO_DATA {
 struct RDO_DATA {
   union {
     struct {
-      uint32_t max_current : 10; // max current in 10mA units
-      uint32_t op_current : 10;  // operating current in 10mA units
-      uint32_t reserved_1 : 8;   // shall be set to zero
-      uint32_t obj_pos : 3;      // object position (000b is reserved)
-      uint32_t reserved_2 : 1;   // shall be set to zero
+      uint32_t max_current : 10;  // max current in 10mA units
+      uint32_t op_current : 10;   // operating current in 10mA units
+      uint32_t reserved_1 : 8;    // shall be set to zero
+      uint32_t obj_pos : 3;       // object position (000b is reserved)
+      uint32_t reserved_2 : 1;    // shall be set to zero
     } fixed;
 
     struct {
-      uint32_t op_current : 7; // operating current in 50mA units
-      uint32_t reserved_1 : 2; // shall be set to zero
-      uint32_t voltage : 11;   // output voltage in 20mV units
-      uint32_t reserved_2 : 8; // shall be set to zero
-      uint32_t obj_pos : 3;    // object position (000b is reserved)
-      uint32_t reserved_3 : 1; // shall be set to zero
+      uint32_t op_current : 7;  // operating current in 50mA units
+      uint32_t reserved_1 : 2;  // shall be set to zero
+      uint32_t voltage : 11;    // output voltage in 20mV units
+      uint32_t reserved_2 : 8;  // shall be set to zero
+      uint32_t obj_pos : 3;     // object position (000b is reserved)
+      uint32_t reserved_3 : 1;  // shall be set to zero
     } pps;
 
     struct {
@@ -159,13 +158,11 @@ static const uint8_t SRCPDO_LENGTH = 28;
  *
  */
 class AP33772 {
-
-public:
+ public:
   static AP33772 *inst;
 
   static AP33772 *get_instance() {
-    if (inst == nullptr)
-      inst = new AP33772();
+    if (inst == nullptr) inst = new AP33772();
     return inst;
   }
 
@@ -198,9 +195,8 @@ public:
    * @attention Blocking function due to long I2C write;
    * minimum blocking time is 15ms
    */
-  void
-  set_NTC(uint16_t TR25, uint16_t TR50, uint16_t TR75,
-          uint16_t TR100); // see EVB user guide page 13 for more information
+  void set_NTC(uint16_t TR25, uint16_t TR50, uint16_t TR75,
+               uint16_t TR100);  // see EVB user guide page 13 for more information
 
   /**
    * @brief Set target temperature (C) when output power through USB-C is
@@ -260,7 +256,7 @@ public:
    */
   void print_pdo(void);
 
-private:
+ private:
   AP33772();
   ~AP33772();
   AP33772(AP33772 const &) = delete;
@@ -284,4 +280,4 @@ private:
   PDO_DATA pdo_data[7]{0};
 };
 
-#endif // End _AP33772_H
+#endif  // End _AP33772_H

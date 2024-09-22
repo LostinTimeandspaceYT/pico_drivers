@@ -46,12 +46,12 @@ static const uint8_t RW_BUFFER = 0x53;
 static const uint8_t SOFT_RESET = 0x0D;
 static const uint8_t SEND_CMD = 0x26;
 
-#define HARD_RESET_USB_SINK                                                    \
-  do {                                                                         \
-    gpio_put(STUSB4500_RESET_PIN, 1);                                          \
-    asm volatile("nop \n nop \n nop");                                         \
-    asm volatile("nop \n nop \n nop");                                         \
-    gpio_put(STUSB4500_RESET_PIN, 0);                                          \
+#define HARD_RESET_USB_SINK            \
+  do {                                 \
+    gpio_put(STUSB4500_RESET_PIN, 1);  \
+    asm volatile("nop \n nop \n nop"); \
+    asm volatile("nop \n nop \n nop"); \
+    gpio_put(STUSB4500_RESET_PIN, 0);  \
   } while (0)
 
 enum PDO_NUM {
@@ -61,7 +61,7 @@ enum PDO_NUM {
 };
 
 class STUSB4500 {
-private:
+ private:
   STUSB4500();
   ~STUSB4500();
   register32_t pdo_data;
@@ -80,7 +80,7 @@ private:
   void exit_test_mode(void);
   void wait_exec(void);
 
-public:
+ public:
   static STUSB4500 *inst;
   /**
    * \brief Singleton object used to control
@@ -89,8 +89,7 @@ public:
    * \return pointer to the instance.
    */
   static STUSB4500 *get_instance() {
-    if (inst == nullptr)
-      inst = new STUSB4500();
+    if (inst == nullptr) inst = new STUSB4500();
     return inst;
   }
 

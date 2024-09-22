@@ -11,21 +11,32 @@
  */
 
 #include "ssd1306.hpp"
+
 #include "font/dialog_bold_16.hpp"
 #include "font/ssd1306_font.hpp"
 
 /* Constructors */
 OLED::OLED(uint8_t height, uint8_t width, bool reversed)
-    : i2c(I2C()), height(height), width(width), reversed(reversed),
-      pages(height / 8), buff_size(width * pages), my_font(&Dialog_bold_16) {
+    : i2c(I2C()),
+      height(height),
+      width(width),
+      reversed(reversed),
+      pages(height / 8),
+      buff_size(width * pages),
+      my_font(&Dialog_bold_16) {
   init();
   clear_buffer();
   show();
 }
 
 OLED::OLED(I2C i2c, uint8_t height, uint8_t width, bool reversed)
-    : i2c(i2c), height(height), width(width), reversed(reversed),
-      pages(height / 8), buff_size(width * pages), my_font(&Dialog_bold_16) {
+    : i2c(i2c),
+      height(height),
+      width(width),
+      reversed(reversed),
+      pages(height / 8),
+      buff_size(width * pages),
+      my_font(&Dialog_bold_16) {
   init();
   clear_buffer();
   show();
@@ -55,7 +66,7 @@ void OLED::init() {
   write_cmd(SET_COM_PIN_CFG);
 
   if (height == 64)
-    write_cmd(0x12); // TODO: may want to change to switch case
+    write_cmd(0x12);  // TODO: may want to change to switch case
   else if (height == 32)
     write_cmd(0x02);
 
@@ -213,8 +224,7 @@ void OLED::draw_rectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
   draw_fast_vline(x + width - 1, y, height);
 }
 
-void OLED::draw_filled_rectangle(uint8_t x, uint8_t y, uint8_t width,
-                                 uint8_t height) {
+void OLED::draw_filled_rectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
   for (uint8_t i = 0; i < height; ++i) {
     draw_fast_hline(x, y + i, width);
   }
@@ -235,8 +245,7 @@ void OLED::is_scroll(bool is_enable) { write_cmd(SET_SCROLL | is_enable); }
 void OLED::set_font(const GFXfont *font) { my_font = font; }
 
 void OLED::print_char(uint8_t x, uint8_t y, uint8_t character) {
-  if (character < my_font->first_char || character > my_font->last_char)
-    return;
+  if (character < my_font->first_char || character > my_font->last_char) return;
 
   character -= my_font->first_char;
   GFXglyph *glyph = my_font->glyph + character;
@@ -264,8 +273,7 @@ void OLED::print_char(uint8_t x, uint8_t y, uint8_t character) {
 }
 
 void OLED::print(uint8_t x, uint8_t y, uint8_t *str) {
-  if (str == nullptr)
-    return;
+  if (str == nullptr) return;
 
   uint8_t i = 0;
   while (str[i] != '\0') {
@@ -286,8 +294,7 @@ void OLED::draw_bitmap(uint8_t x, uint8_t y, uint8_t width, uint8_t height,
   for (uint8_t i = 0; i < height; ++i) {
     for (uint8_t j = 0; j < width; ++j) {
       bool value = bit_read(img[i * ((width - 1) / 8 + 1) + j / 8], 7 - j % 8);
-      if (value)
-        draw_pixel(x + j, y + i);
+      if (value) draw_pixel(x + j, y + i);
     }
   }
 }

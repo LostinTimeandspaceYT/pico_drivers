@@ -1,9 +1,10 @@
-#include "i2c/i2c.hpp"
-#include "pico/stdlib.h"
-#include <cstdint>
 #include <stdio.h>
 #include <string.h>
 
+#include <cstdint>
+
+#include "i2c/i2c.hpp"
+#include "pico/stdlib.h"
 #include "ush/microshell.h"
 
 /* Debug Symbols */
@@ -20,8 +21,8 @@
 #endif
 
 #if DEBUG_SSD1306
-#include "ssd1306/ssd1306.hpp"
 #include "ssd1306/bitmap.hpp"
+#include "ssd1306/ssd1306.hpp"
 #endif
 
 /*Function Prototypes */
@@ -63,27 +64,27 @@ static const struct ush_io_interface ush_iface = {
 
 // microshell descriptor
 static const struct ush_descriptor ush_desc = {
-    .io = &ush_iface,                          // I/O interface pointer
-    .input_buffer = ush_in_buf,                // working input buffer
-    .input_buffer_size = sizeof(ush_in_buf),   // working input buffer size
-    .output_buffer = ush_out_buf,              // working output buffer
-    .output_buffer_size = sizeof(ush_out_buf), // working output buffer size
-    .path_max_length = PATH_MAX_SIZE,          // path maximum length (stack)
-    .hostname = "Pico2",                       // hostname (in prompt)
+    .io = &ush_iface,                           // I/O interface pointer
+    .input_buffer = ush_in_buf,                 // working input buffer
+    .input_buffer_size = sizeof(ush_in_buf),    // working input buffer size
+    .output_buffer = ush_out_buf,               // working output buffer
+    .output_buffer_size = sizeof(ush_out_buf),  // working output buffer size
+    .path_max_length = PATH_MAX_SIZE,           // path maximum length (stack)
+    .hostname = "Pico2",                        // hostname (in prompt)
 };
 
 // toggle file execute callback
 static void toggle_exec_callback(struct ush_object *self,
-                                 struct ush_file_descriptor const *file,
-                                 int argc, char *argv[]) {
+                                 struct ush_file_descriptor const *file, int argc,
+                                 char *argv[]) {
   // simple toggle led, without any arguments validation
   gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN));
 }
 
 // reboot cmd file execute callback
 static void reboot_exec_callback(struct ush_object *self,
-                                 struct ush_file_descriptor const *file,
-                                 int argc, char *argv[]) {
+                                 struct ush_file_descriptor const *file, int argc,
+                                 char *argv[]) {
 #if defined(ARDUINO_ARCH_ESP32)
   ESP.restart();
 #elif defined(ARDUINO_ARCH_AVR)
@@ -121,8 +122,7 @@ static void set_exec_callback(struct ush_object *self,
 
 // info file get data callback
 size_t info_get_data_callback(struct ush_object *self,
-                              struct ush_file_descriptor const *file,
-                              uint8_t **data) {
+                              struct ush_file_descriptor const *file, uint8_t **data) {
   static const char *info = "Use MicroShell and make fun!\r\n";
 
   // return pointer to data
@@ -133,8 +133,7 @@ size_t info_get_data_callback(struct ush_object *self,
 
 // led file get data callback
 size_t led_get_data_callback(struct ush_object *self,
-                             struct ush_file_descriptor const *file,
-                             uint8_t **data) {
+                             struct ush_file_descriptor const *file, uint8_t **data) {
   // read current led state
   bool state = gpio_get(PICO_DEFAULT_LED_PIN);
   // return pointer to data
@@ -145,11 +144,10 @@ size_t led_get_data_callback(struct ush_object *self,
 
 // led file set data callback
 void led_set_data_callback(struct ush_object *self,
-                           struct ush_file_descriptor const *file,
-                           uint8_t *data, size_t size) {
+                           struct ush_file_descriptor const *file, uint8_t *data,
+                           size_t size) {
   // data size validation
-  if (size < 1)
-    return;
+  if (size < 1) return;
 
   // arguments validation
   if (data[0] == '1') {
@@ -163,8 +161,7 @@ void led_set_data_callback(struct ush_object *self,
 
 // time file get data callback
 size_t time_get_data_callback(struct ush_object *self,
-                              struct ush_file_descriptor const *file,
-                              uint8_t **data) {
+                              struct ush_file_descriptor const *file, uint8_t **data) {
   static char time_buf[16];
   // read current time
   long current_time = millis();
@@ -179,7 +176,7 @@ size_t time_get_data_callback(struct ush_object *self,
 
 // root directory files descriptor
 static const struct ush_file_descriptor root_files[] = {{
-    .name = "info.txt", // info.txt file name
+    .name = "info.txt",  // info.txt file name
     .description = NULL,
     .help = NULL,
     .exec = NULL,
@@ -189,12 +186,12 @@ static const struct ush_file_descriptor root_files[] = {{
 // bin directory files descriptor
 static const struct ush_file_descriptor bin_files[] = {
     {
-        .name = "toggle",             // toggle file name
-        .description = "toggle led",  // optional file description
-        .help = "usage: toggle\r\n",  // optional help manual
-        .exec = toggle_exec_callback, // optional execute callback
+        .name = "toggle",              // toggle file name
+        .description = "toggle led",   // optional file description
+        .help = "usage: toggle\r\n",   // optional help manual
+        .exec = toggle_exec_callback,  // optional execute callback
     },
-    {.name = "set", // set file name
+    {.name = "set",  // set file name
      .description = "set led",
      .help = "usage: set {0,1}\r\n",
      .exec = set_exec_callback},
@@ -207,8 +204,8 @@ static const struct ush_file_descriptor dev_files[] = {
         .description = NULL,
         .help = NULL,
         .exec = NULL,
-        .get_data = led_get_data_callback, // optional data getter callback
-        .set_data = led_set_data_callback, // optional data setter callback
+        .get_data = led_get_data_callback,  // optional data getter callback
+        .set_data = led_set_data_callback,  // optional data setter callback
     },
     {
         .name = "time",
@@ -240,7 +237,6 @@ static struct ush_node_object bin;
 static struct ush_node_object cmd;
 
 int main() {
-
   setup();
 
 #if DEBUG_SSD1306
@@ -262,7 +258,7 @@ int main() {
 void setup(void) {
   setup_default_uart();
   stdio_init_all();
-  sleep_ms(2000); // Internet suggests sleeping after calling stdio_init_all();
+  sleep_ms(2000);  // Internet suggests sleeping after calling stdio_init_all();
 
   /* Make sure the pico is alive... */
   gpio_init(PICO_DEFAULT_LED_PIN);
@@ -273,11 +269,9 @@ void setup(void) {
 
   ush_commands_add(&ush, &cmd, cmd_files, sizeof(cmd_files) / sizeof(cmd_files[0]));
 
-  // mount root directory (root must be first)
-  ush_node_mount(&ush, "/", &root, root_files, sizeof(root_files) / sizeof(root_files[0]));
-  // mount dev directory
+  // mount directories (root must be first)
+  ush_node_mount(&ush, "/", &root, root_files,sizeof(root_files) / sizeof(root_files[0]));
   ush_node_mount(&ush, "/dev", &dev, dev_files, sizeof(dev_files) / sizeof(dev_files[0]));
-  // mount bin directory
   ush_node_mount(&ush, "/bin", &bin, bin_files, sizeof(bin_files) / sizeof(bin_files[0]));
 }
 
@@ -293,17 +287,14 @@ void forever_blink(void) {
   }
 }
 
-bool reserved_addr(uint8_t addr) {
-  return (addr & 0x78) == 0 || (addr & 0x78) == 0x78;
-}
+bool reserved_addr(uint8_t addr) { return (addr & 0x78) == 0 || (addr & 0x78) == 0x78; }
 
 void scan_i2c_bus() {
   I2C i2c = I2C();
   printf("\n I2C Bus Scan\n");
   printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \n");
   for (int addr = 0; addr < (1 << 7); ++addr) {
-    if (addr % 16 == 0)
-      printf("%02x ", addr);
+    if (addr % 16 == 0) printf("%02x ", addr);
     int ret;
     uint8_t rxdata;
     if (reserved_addr(addr))

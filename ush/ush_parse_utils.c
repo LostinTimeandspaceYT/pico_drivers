@@ -22,109 +22,103 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <string.h>
+
 #include "ush_internal.h"
 #include "ush_preconfig.h"
 
-#include <string.h>
+void ush_parse_start(struct ush_object *self) {
+  USH_ASSERT(self != NULL);
 
-void ush_parse_start(struct ush_object *self)
-{
-        USH_ASSERT(self != NULL);
-
-        self->in_pos = 0;
-        self->out_pos = 0;
-        self->args_count = 0;
-        self->escape_flag = false;
-        self->state = USH_STATE_PARSE_SEARCH_ARG;
+  self->in_pos = 0;
+  self->out_pos = 0;
+  self->args_count = 0;
+  self->escape_flag = false;
+  self->state = USH_STATE_PARSE_SEARCH_ARG;
 }
 
-int ush_parse_get_args(struct ush_object *self, char* *argv)
-{
-        char *ptr = self->desc->input_buffer;
-        int argc = self->args_count;
+int ush_parse_get_args(struct ush_object *self, char **argv) {
+  char *ptr = self->desc->input_buffer;
+  int argc = self->args_count;
 
-        if (argv == NULL)
-                return argc;
+  if (argv == NULL) return argc;
 
-        for (int i = 0; i < argc; i++) {
-                argv[i] = ptr;
-                ptr += strlen(argv[i]) + 1;
-        }
+  for (int i = 0; i < argc; i++) {
+    argv[i] = ptr;
+    ptr += strlen(argv[i]) + 1;
+  }
 
-        return argc;        
+  return argc;
 }
 
-void ush_parse_char_standard(struct ush_object *self, char ch)
-{
-        switch (self->state) {
-        case USH_STATE_PARSE_SEARCH_ARG:
-                switch (ch) {
-                case ' ':
-                        break;
-                case '\"':
-                        self->args_count++;
-                        self->state = USH_STATE_PARSE_QUOTE_ARG;
-                        break;
-                case '\\':
-                        self->escape_flag = true;
-                        self->args_count++;
-                        self->state = USH_STATE_PARSE_STANDARD_ARG;
-                        break;
-                default:
-                        self->desc->input_buffer[self->out_pos++] = ch;
-                        self->args_count++;
-                        self->state = USH_STATE_PARSE_STANDARD_ARG;
-                        break;
-                }
-                break;
-        case USH_STATE_PARSE_QUOTE_ARG:
-                if (self->escape_flag != false) {
-                        if (ch == 'x')
-                                self->desc->input_buffer[self->out_pos++] = '\\';
-                        self->desc->input_buffer[self->out_pos++] = ch;
-                        self->escape_flag = false;
-                        break;
-                }
+void ush_parse_char_standard(struct ush_object *self, char ch) {
+  switch (self->state) {
+  case USH_STATE_PARSE_SEARCH_ARG:
+    switch (ch) {
+    case ' ':
+      break;
+    case '\"':
+      self->args_count++;
+      self->state = USH_STATE_PARSE_QUOTE_ARG;
+      break;
+    case '\\':
+      self->escape_flag = true;
+      self->args_count++;
+      self->state = USH_STATE_PARSE_STANDARD_ARG;
+      break;
+    default:
+      self->desc->input_buffer[self->out_pos++] = ch;
+      self->args_count++;
+      self->state = USH_STATE_PARSE_STANDARD_ARG;
+      break;
+    }
+    break;
+  case USH_STATE_PARSE_QUOTE_ARG:
+    if (self->escape_flag != false) {
+      if (ch == 'x') self->desc->input_buffer[self->out_pos++] = '\\';
+      self->desc->input_buffer[self->out_pos++] = ch;
+      self->escape_flag = false;
+      break;
+    }
 
-                switch (ch) {
-                case '\"':
-                        self->state = USH_STATE_PARSE_STANDARD_ARG;
-                        break;
-                case '\\':
-                        self->escape_flag = true;
-                        break;
-                default:
-                        self->desc->input_buffer[self->out_pos++] = ch;
-                        break;
-                }
-                break;
-        case USH_STATE_PARSE_STANDARD_ARG:
-                if (self->escape_flag != false) {
-                        if (ch == 'x')
-                                self->desc->input_buffer[self->out_pos++] = '\\';
-                        self->desc->input_buffer[self->out_pos++] = ch;
-                        self->escape_flag = false;
-                        break;
-                }
+    switch (ch) {
+    case '\"':
+      self->state = USH_STATE_PARSE_STANDARD_ARG;
+      break;
+    case '\\':
+      self->escape_flag = true;
+      break;
+    default:
+      self->desc->input_buffer[self->out_pos++] = ch;
+      break;
+    }
+    break;
+  case USH_STATE_PARSE_STANDARD_ARG:
+    if (self->escape_flag != false) {
+      if (ch == 'x') self->desc->input_buffer[self->out_pos++] = '\\';
+      self->desc->input_buffer[self->out_pos++] = ch;
+      self->escape_flag = false;
+      break;
+    }
 
-                switch (ch) {
-                case ' ':
-                        self->desc->input_buffer[self->out_pos++] = '\0';
-                        self->state = USH_STATE_PARSE_SEARCH_ARG;
-                        break;
-                case '\"':
-                        self->state = USH_STATE_PARSE_QUOTE_ARG;
-                        break;
-                case '\\':
-                        self->escape_flag = true;
-                        break;
-                default:
-                        self->desc->input_buffer[self->out_pos++] = ch;
-                        break;
-                }
-                break;
-        default:
-                USH_ASSERT(false);
-                break;
-        }
+    switch (ch) {
+    case ' ':
+      self->desc->input_buffer[self->out_pos++] = '\0';
+      self->state = USH_STATE_PARSE_SEARCH_ARG;
+      break;
+    case '\"':
+      self->state = USH_STATE_PARSE_QUOTE_ARG;
+      break;
+    case '\\':
+      self->escape_flag = true;
+      break;
+    default:
+      self->desc->input_buffer[self->out_pos++] = ch;
+      break;
+    }
+    break;
+  default:
+    USH_ASSERT(false);
+    break;
+  }
 }

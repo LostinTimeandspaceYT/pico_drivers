@@ -27,8 +27,9 @@
 #ifndef _TSP25750_H
 #define _TSP25750_H
 
-#include "../i2c/i2c.hpp"
 #include <cstdint>
+
+#include "../i2c/i2c.hpp"
 
 static constexpr uint8_t TPS25750_EXTERNAL_EEPROM_ADDRESS = 0x50;
 
@@ -41,8 +42,7 @@ enum TPS25750_SLAVE_ADDRESSES {
 };
 
 class TPS25750 {
-
-public:
+ public:
   static TPS25750 *inst;
 
   static TPS25750 *get_instance() {
@@ -52,7 +52,7 @@ public:
     return inst;
   }
 
-private:
+ private:
   TPS25750();
   ~TPS25750();
   TPS25750(TPS25750 const &) = delete;

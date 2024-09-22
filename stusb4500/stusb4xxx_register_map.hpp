@@ -27,29 +27,29 @@ static const uint8_t TYPEC_MONITORING_STATUS_1 = 0x10;
 static const uint8_t CC1_CONNECTION_STATUS = 0x11;
 static const uint8_t CC_HW_FAULT_STATUS_0 = 0x12;
 static const uint8_t CC_HW_FAULT_STATUS_1 = 0x13;
-static const uint8_t PD_TYPEC_STATUS = 0x14; // Sink only
-static const uint8_t TYPEC_STATUS = 0x15;    // Sink only
+static const uint8_t PD_TYPEC_STATUS = 0x14;  // Sink only
+static const uint8_t TYPEC_STATUS = 0x15;     // Sink only
 static const uint8_t PRT_STATUS = 0x16;
-static const uint8_t PHY_STATUS = 0x17; // Source only
+static const uint8_t PHY_STATUS = 0x17;  // Source only
 /* 0x18, 0x19 Reserved */
 static const uint8_t PD_COMMAND_CTRL = 0x1a;
 /* 0x1b, 0x1c Reserved */
-static const uint8_t DEVICE_CTRL = 0x1d; // Source only
-static const uint8_t ANALOG_CTRL = 0x1e; // Source only
+static const uint8_t DEVICE_CTRL = 0x1d;  // Source only
+static const uint8_t ANALOG_CTRL = 0x1e;  // Source only
 /* 0x1f reserved */
 static const uint8_t MONITORING_CTRL_0 = 0x20;
-static const uint8_t MONITORING_CTRL_1 = 0x21; // Source only
+static const uint8_t MONITORING_CTRL_1 = 0x21;  // Source only
 static const uint8_t MONITORING_CTRL_2 = 0x22;
 static const uint8_t RESET_CTRL = 0x23;
-static const uint8_t POWER_ACCESSORY_CTRL = 0x24; // Source only
+static const uint8_t POWER_ACCESSORY_CTRL = 0x24;  // Source only
 static const uint8_t VBUS_DISCHARGE_TIME_CTRL = 0x25;
 static const uint8_t VBUS_DISCHARGE_CTRL = 0x26;
 static const uint8_t VBUS_CTRL = 0x27;
 /* 0x28 reserved */
 static const uint8_t PE_FSM = 0x29;
 // 0x2a -> 0x2c Reserved
-static const uint8_t GPIO_SW_GPIO = 0x2d; // Sink only
-static const uint8_t SPARE_BITS = 0x2e;   // Source only
+static const uint8_t GPIO_SW_GPIO = 0x2d;  // Sink only
+static const uint8_t SPARE_BITS = 0x2e;    // Source only
 static const uint8_t DEVICE_ID = 0x2f;
 // 0x30 Reserved
 
@@ -92,14 +92,14 @@ static const uint8_t RX_DATA_OBJ7_1 = 0x4c;
 static const uint8_t RX_DATA_OBJ7_2 = 0x4d;
 static const uint8_t RX_DATA_OBJ7_3 = 0x4e;
 /* 0x4f, 0x50 Reserved */
-static const uint8_t TX_HEADER_LOW = 0x51;  // Sink only
-static const uint8_t TX_HEADER_HIGH = 0x52; // Sink only
+static const uint8_t TX_HEADER_LOW = 0x51;   // Sink only
+static const uint8_t TX_HEADER_HIGH = 0x52;  // Sink only
 /* 0x63 -> 0x6f Reserved */
 
 /* Contract Registers */
 static const uint8_t DPM_PDO_NUMB = 0x70;
 
-static const uint8_t DPM_SRC_PDO1_0 = 0x71; // Start Source
+static const uint8_t DPM_SRC_PDO1_0 = 0x71;  // Start Source
 static const uint8_t DPM_SRC_PDO1_1 = 0x72;
 static const uint8_t DPM_SRC_PDO1_2 = 0x73;
 static const uint8_t DPM_SRC_PDO1_3 = 0x74;
@@ -122,9 +122,9 @@ static const uint8_t DPM_SRC_PDO4_3 = 0x80;
 static const uint8_t DPM_SRC_PDO5_0 = 0x81;
 static const uint8_t DPM_SRC_PDO5_1 = 0x82;
 static const uint8_t DPM_SRC_PDO5_2 = 0x83;
-static const uint8_t DPM_SRC_PDO5_3 = 0x84; // End Source
+static const uint8_t DPM_SRC_PDO5_3 = 0x84;  // End Source
 
-static const uint8_t DPM_SNK_PDO1_0 = 0x85; // Start Sink
+static const uint8_t DPM_SNK_PDO1_0 = 0x85;  // Start Sink
 static const uint8_t DPM_SNK_PDO1_1 = 0x86;
 static const uint8_t DPM_SNK_PDO1_2 = 0x87;
 static const uint8_t DPM_SNK_PDO1_3 = 0x88;
@@ -137,7 +137,7 @@ static const uint8_t DPM_SNK_PDO2_3 = 0x8C;
 static const uint8_t DPM_SNK_PDO3_0 = 0x8D;
 static const uint8_t DPM_SNK_PDO3_1 = 0x8E;
 static const uint8_t DPM_SNK_PDO3_2 = 0x8F;
-static const uint8_t DPM_SNK_PDO3_3 = 0x90; // End Sink
+static const uint8_t DPM_SNK_PDO3_3 = 0x90;  // End Sink
 
 static const uint8_t DPM_REQ_RDO3_0 = 0x91;
 static const uint8_t DPM_REQ_RDO3_1 = 0x92;

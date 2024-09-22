@@ -45,25 +45,24 @@ static constexpr uint8_t SET_HOR_SCROLL = 0x26;
 static constexpr uint8_t SET_COM_OUT_DIR_REVERSE = 0xC0;
 
 struct GFXglyph {
-  uint16_t bitmap_offset; // Ptr into GFXfont->bitmap
-  uint8_t width;          // Bitmap dimensions in pixels
+  uint16_t bitmap_offset;  // Ptr into GFXfont->bitmap
+  uint8_t width;           // Bitmap dimensions in pixels
   uint8_t height;
-  uint8_t x_advance; // Distance to advance cursour (x-axis)
-  int8_t x_offset;   // Distance from cursor position to Upper Left corner
+  uint8_t x_advance;  // Distance to advance cursour (x-axis)
+  int8_t x_offset;    // Distance from cursor position to Upper Left corner
   int8_t y_offset;
 };
 
 struct GFXfont {
-  uint8_t *bitmap;    // Glyph bitmaps, concatenated
-  GFXglyph *glyph;    // array of glyphs
-  uint8_t first_char; // ASCII extents
-  uint8_t last_char;  // ASCII extents
-  uint8_t y_advance;  // distance to Newline
+  uint8_t *bitmap;     // Glyph bitmaps, concatenated
+  GFXglyph *glyph;     // array of glyphs
+  uint8_t first_char;  // ASCII extents
+  uint8_t last_char;   // ASCII extents
+  uint8_t y_advance;   // distance to Newline
 };
 
 class OLED {
-
-public:
+ public:
   OLED(uint8_t height, uint8_t width, bool reversed);
   OLED(I2C i2c, uint8_t height, uint8_t width, bool reversed);
   ~OLED();
@@ -124,8 +123,7 @@ public:
    * @param width pixels in the x direction
    * @param height pixels in the y direction
    */
-  void draw_filled_rectangle(uint8_t x, uint8_t y, uint8_t width,
-                             uint8_t height);
+  void draw_filled_rectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
 
   /**
    * @brief Draws a circle from xc,yc as its centerpoint.
@@ -184,14 +182,14 @@ public:
   void draw_bitmap(uint8_t x, uint8_t y, uint8_t width, uint8_t height,
                    const uint8_t *img);
 
-private:
+ private:
   I2C i2c;
   uint8_t width;
   uint8_t height;
   uint8_t pages;
   uint16_t buff_size;
   bool reversed;
-  uint8_t buffer[1024] = {0}; // Ensure the buffer is clear.
+  uint8_t buffer[1024] = {0};  // Ensure the buffer is clear.
   const GFXfont *my_font;
 
   void init(void);
@@ -202,5 +200,5 @@ private:
   void draw_pixel(uint8_t x, uint8_t y);
 };
 
-#endif // end _SSD1306_H
+#endif  // end _SSD1306_H
 /* END OF FILE */

@@ -1,0 +1,15 @@
+BasedOnStyle: Google
+IndentWidth: 2
+IndentCaseLabels: false
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+ColumnLimit: 90
+PointerAlignment: Right
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+MaxEmptyLinesToKeep: 1
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+UseTab: Never

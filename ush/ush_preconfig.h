@@ -30,9 +30,9 @@ extern "C" {
 #endif
 
 #if !defined(USH_CONFIG_CUSTOM_FILE)
-        #include "ush_config_platform.h"
+#include "ush_config_platform.h"
 #else
-        #include USH_CONFIG_CUSTOM_FILE
+#include USH_CONFIG_CUSTOM_FILE
 #endif
 
 #ifdef __cplusplus

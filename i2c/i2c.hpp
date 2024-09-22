@@ -12,22 +12,24 @@
 #ifndef _I2C_H
 #define _I2C_H
 
+#include <stdio.h>
+
+#include <climits>
+
 #include "../utils/common.hpp"
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
-#include <climits>
-#include <stdio.h>
 
 class I2C {
-private:
+ private:
   i2c_inst_t *i2c = PICO_DEFAULT_I2C;
   uint sda = I2C_DEFAULT_SDA;
   uint scl = I2C_DEFAULT_SCL;
   uint interrupt = PIN_UNUSED;
   uint32_t baudrate = I2C_DEFAULT_BAUDRATE;
 
-public:
+ public:
   I2C(uint sda, uint scl, uint32_t baudrate = I2C_DEFAULT_BAUDRATE)
       : sda(sda), scl(scl), baudrate(baudrate) {
     init();
@@ -56,17 +58,14 @@ public:
   int write_bytes(uint8_t address, uint8_t reg, const uint8_t *buf, int len);
   int read_bytes(uint8_t address, uint8_t reg, uint8_t *buf, int len);
 
-  uint8_t get_bits(uint8_t address, uint8_t reg, uint8_t shift,
-                   uint8_t mask = 0b1);
-  void set_bits(uint8_t address, uint8_t reg, uint8_t shift,
-                uint8_t mask = 0b1);
-  void clear_bits(uint8_t address, uint8_t reg, uint8_t shift,
-                  uint8_t mask = 0b1);
+  uint8_t get_bits(uint8_t address, uint8_t reg, uint8_t shift, uint8_t mask = 0b1);
+  void set_bits(uint8_t address, uint8_t reg, uint8_t shift, uint8_t mask = 0b1);
+  void clear_bits(uint8_t address, uint8_t reg, uint8_t shift, uint8_t mask = 0b1);
 
-private:
+ private:
   void init();
 };
 
-#endif // END _I2C_H
+#endif  // END _I2C_H
 
 /* END OF FILE */

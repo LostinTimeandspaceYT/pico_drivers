@@ -41,15 +41,11 @@ void STUSB4500::write_to_reg(uint8_t addr, uint8_t *data) {
   i2c.write_blocking(STUSB4500_ADDRESS, buff, sizeof(buff), false);
 }
 
-void STUSB4500::read_from_reg(uint8_t addr, uint8_t num_of_bytes,
-                              uint8_t *rbuf) {
-  if (num_of_bytes > 8)
-    num_of_bytes = 8;
+void STUSB4500::read_from_reg(uint8_t addr, uint8_t num_of_bytes, uint8_t *rbuf) {
+  if (num_of_bytes > 8) num_of_bytes = 8;
   i2c.write_blocking(STUSB4500_ADDRESS, &addr, 1, false);
-  int bytes_read =
-      i2c.read_blocking(STUSB4500_ADDRESS, rbuf, num_of_bytes, false);
-  if (bytes_read != num_of_bytes)
-    puts("Error Reading from i2c");
+  int bytes_read = i2c.read_blocking(STUSB4500_ADDRESS, rbuf, num_of_bytes, false);
+  if (bytes_read != num_of_bytes) puts("Error Reading from i2c");
 }
 
 void STUSB4500::exit_test_mode() {
@@ -96,19 +92,16 @@ void STUSB4500::write_sector(uint8_t sector_num, uint8_t *data) {
   wait_exec();
 
   write_byte_to_reg(FTP_CTRL_1, PROG_SECTOR & FTP_CUST_OPCODE);
-  uint8_t value = ((sector_num & FTP_CUST_SECT) | FTP_CUST_PWR |
-                   FTP_CUST_RST_N | FTP_CUST_REQ);
+  uint8_t value =
+      ((sector_num & FTP_CUST_SECT) | FTP_CUST_PWR | FTP_CUST_RST_N | FTP_CUST_REQ);
   write_byte_to_reg(FTP_CTRL_0, value);
   wait_exec();
 }
 
-void STUSB4500::set_pdo_num(PDO_NUM pdo_num) {
-  write_byte_to_reg(DPM_PDO_NUMB, pdo_num);
-}
+void STUSB4500::set_pdo_num(PDO_NUM pdo_num) { write_byte_to_reg(DPM_PDO_NUMB, pdo_num); }
 
 void STUSB4500::write_pdo(PDO_NUM pdo_num, uint8_t *data) {
-  if (pdo_num < PDO_1 || pdo_num > PDO_3)
-    return;
+  if (pdo_num < PDO_1 || pdo_num > PDO_3) return;
   uint8_t addr_mask = 0x85;
   write_to_reg(addr_mask + ((pdo_num - 1) * 4), data);
 }
@@ -124,10 +117,8 @@ void STUSB4500::load_pdo(PDO_NUM pdo_num) {
 }
 
 bool STUSB4500::set_voltage(PDO_NUM pdo_num, float volts) {
-  if (5.0 < volts > 20.0)
-    return false;
-  if (pdo_num == PDO_1)
-    volts = 5;
+  if (5.0 < volts > 20.0) return false;
+  if (pdo_num == PDO_1) volts = 5;
   volts *= 20;
   uint16_t val = (uint16_t)volts;
   load_pdo(pdo_num);
@@ -138,8 +129,7 @@ bool STUSB4500::set_voltage(PDO_NUM pdo_num, float volts) {
 }
 
 bool STUSB4500::set_current(PDO_NUM pdo_num, float i) {
-  if (0.01 < i > 5.0)
-    return false;
+  if (0.01 < i > 5.0) return false;
   uint16_t mask = 0x03ff;
   i *= 100;
   uint16_t value = (uint16_t)i & mask;
@@ -151,8 +141,7 @@ bool STUSB4500::set_current(PDO_NUM pdo_num, float i) {
 }
 
 bool STUSB4500::set_lower_volt_limit(PDO_NUM pdo_num, float value) {
-  if (5.0 < value > 20.0)
-    return false;
+  if (5.0 < value > 20.0) return false;
   value -= 5.0;
   /* save the bits, not the type */
   unsigned char *c = reinterpret_cast<unsigned char *>(&value);
@@ -167,8 +156,7 @@ bool STUSB4500::set_lower_volt_limit(PDO_NUM pdo_num, float value) {
 }
 
 bool STUSB4500::set_upper_volt_limit(PDO_NUM pdo_num, float value) {
-  if (5.0 < value > 21.0)
-    return false;
+  if (5.0 < value > 21.0) return false;
 
   value -= 5.0;
   /* save the bits, not the type */
@@ -187,8 +175,7 @@ bool STUSB4500::set_upper_volt_limit(PDO_NUM pdo_num, float value) {
 }
 
 bool STUSB4500::set_flex_current(float value) {
-  if (0.0 < value > 5.0)
-    return false;
+  if (0.0 < value > 5.0) return false;
   value *= 100;
   unsigned char *c = reinterpret_cast<unsigned char *>(&value);
   sector[4][3] &= 0x03;
@@ -209,16 +196,14 @@ void STUSB4500::set_usb_comms_capable(bool enable) {
 }
 
 bool STUSB4500::set_POWER_OK_config(uint8_t config_code) {
-  if (2 < config_code > 3)
-    return false;
+  if (2 < config_code > 3) return false;
   sector[4][4] &= 0x9f;
   sector[4][4] |= config_code << 5;
   return true;
 }
 
 bool STUSB4500::set_gpio_ctrl(uint8_t ctrl_code) {
-  if (0 < ctrl_code > 3)
-    return false;
+  if (0 < ctrl_code > 3) return false;
   sector[1][0] &= 0xcf;
   sector[1][0] |= ctrl_code << 4;
   return true;
@@ -284,7 +269,7 @@ uint8_t STUSB4500::get_POWER_OK_config() { return (sector[4][4] & 0x60) >> 5; }
 
 uint8_t STUSB4500::get_GPIO_ctrl() { return (sector[1][0] & 0x30) >> 4; }
 
-float STUSB4500::get_requested_source_current() { // FIXME!
+float STUSB4500::get_requested_source_current() {  // FIXME!
   return (sector[4][6] & 0x10) >> 4;
 }
 
@@ -304,15 +289,15 @@ void STUSB4500::reset_sector() {
 
 void STUSB4500::read() {
   write_byte_to_reg(FTP_CUST_PASSWORD_REG, FTP_CUST_PASSWORD);
-  write_byte_to_reg(FTP_CTRL_0, 0x00); // NVM reset
+  write_byte_to_reg(FTP_CTRL_0, 0x00);  // NVM reset
   write_byte_to_reg(FTP_CTRL_0, FTP_CUST_PWR | FTP_CUST_RST_N);
   reset_sector();
   for (int i = 0; i < NUM_OF_SECTORS; ++i) {
     write_byte_to_reg(FTP_CTRL_0,
-                      FTP_CUST_PWR | FTP_CUST_RST_N); // may not be needed
+                      FTP_CUST_PWR | FTP_CUST_RST_N);  // may not be needed
     write_byte_to_reg(FTP_CTRL_1, READ & FTP_CUST_OPCODE);
-    write_byte_to_reg(FTP_CTRL_0, FTP_CUST_SECT | FTP_CUST_PWR |
-                                      FTP_CUST_RST_N | FTP_CUST_REQ);
+    write_byte_to_reg(FTP_CTRL_0,
+                      FTP_CUST_SECT | FTP_CUST_PWR | FTP_CUST_RST_N | FTP_CUST_REQ);
     uint8_t *rbuf = new uint8_t[1]();
     while (*rbuf & FTP_CUST_REQ != 0) {
       read_from_reg(FTP_CTRL_0, 1, rbuf);
@@ -347,21 +332,20 @@ void STUSB4500::write(bool default_mode) {
                                             0xF5, 0x35, 0x5F, 0x00};
     uint8_t def_sector_5[SIZE_OF_SECTOR] = {0x00, 0x4B, 0x90, 0x21,
                                             0x43, 0x00, 0x40, 0xFB};
-    uint8_t *def_sectors[NUM_OF_SECTORS] = {
-        def_sector_1, def_sector_2, def_sector_3, def_sector_4, def_sector_5};
+    uint8_t *def_sectors[NUM_OF_SECTORS] = {def_sector_1, def_sector_2, def_sector_3,
+                                            def_sector_4, def_sector_5};
     enter_write_mode(SECTOR_0 | SECTOR_1 | SECTOR_2 | SECTOR_3 | SECTOR_4);
     for (int i = 0; i < NUM_OF_SECTORS; ++i) {
       write_sector(i, def_sectors[i]);
     }
   } else {
-    uint8_t nvmi[3] = {0, 0, 0}; // just to be explicit
+    uint8_t nvmi[3] = {0, 0, 0};  // just to be explicit
     float volts[3] = {0.0, 0.0, 0.0};
 
     for (int i = 0; i < 3; ++i) {
       load_pdo(PDO_NUM(i + 1));
       float ival = (pdo_data.value & 0x3ff) * 0.01;
-      if (ival > 5.0)
-        ival = 5.0;
+      if (ival > 5.0) ival = 5.0;
       if (ival < 0.5)
         nvmi[i] = 0;
       else if (ival <= 3.0)

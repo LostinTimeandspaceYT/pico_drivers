@@ -30,9 +30,9 @@ extern "C" {
 #endif
 
 /** Library name used in welcome message. */
-#define USH_NAME        "uShell"
+#define USH_NAME "uShell"
 /** Library version used to identification purposes. */
-#define USH_VERSION     "0.1.0"
+#define USH_VERSION "0.1.0"
 
 #ifdef __cplusplus
 }

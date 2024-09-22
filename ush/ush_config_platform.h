@@ -32,11 +32,11 @@ extern "C" {
 // See the official repo for these files.
 // I didn't include them because this library is specifically for the RPi MCUs
 #if defined(ARDUINO)
-        #include "config/arduino/ush_config.h" 
+#include "config/arduino/ush_config.h"
 #elif defined(USH_CONFIG_PLATFORM_POSIX)
-        #include "config/posix/ush_config.h"
+#include "config/posix/ush_config.h"
 #else
-        #include "ush_config.h"
+#include "ush_config.h"
 #endif
 
 #ifdef __cplusplus
