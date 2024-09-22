@@ -39,6 +39,208 @@ When using the `tmux_debug.sh` to debug, be sure `openocd` can be run with sudo 
     **Note:** replace `user_name` with your username.
 3. Save the file.
 
+## Build Script
+
+The build script acts a simple way to create a clean build of your project. It does not require `sudo` privileges.
+
+
+# Picoshell: Port of [Microshell](https://github.com/marcinbor85/microshell/tree/main)
+
+>A lightweight pure C implementation of virtual shell, compatible with VT100 terminal. Support root tree, run-time mounting paths, global commands, and much more. Works out-of-the-box on Arduino-compatible boards. Dedicated for bare-metal embedded systems. Thanks to the asynchronous architecture it does not block operations and can be easily implemented even on small microcontrollers with relatively small resources.
+
+This library is a port of the amazing [Microshell](https://github.com/marcinbor85/microshell/tree/main) Arduino library to the [Pico series](https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html) of microcontrollers. Picoshell replaces the Arduino API calls to use their equivalent [pico-sdk](https://www.raspberrypi.com/documentation/microcontrollers/c_sdk.html) calls.
+
+>Why bother? Isn't the Pico already supported by Arduino anyway?
+
+That is true! And the [earlephilhower](https://github.com/earlephilhower/arduino-pico/) core is great! But what if you already have a project using the `pico-sdk` *(like say a repository of device drivers)*? This library has got you covered.
+
+This port doesn't come with the baggage of the Arduino framework--for better or for worse--reducing the code size significantly. There is also something to be said about reinventing the wheel. 
+
+>It's called Picoshell but the API still refers to it as `ush`, what the heck?
+
+Also true. The intention was to maintain backwards compatability with existing Microshell code already in the wild, and to make it easier for me to maintain this port in the future.
+
+## Features
+
+*Features of Picoshell are largely the same as the Arduino counterpart with a few exceptions.*
+
+- Built-in commands 
+    - `ls` 
+    - `cat`
+    - `pwd`
+    - `help`
+    - `xxd`
+    - `echo`
+- Tab auto-completion
+- Backspace-key functionality
+- Works on any Rp2 based board, RISC is fine too!
+- Written in C, but fully compatible with C++
+- Easy to extend for your own projects
+- Simple to integrate into existing projects
+- Example code provided in this repo
+- Fully asynchronous architecture (static callbacks are not a problem)
+- Non-blocking API (just a single non-blocking function call in the main loop)
+- Supports customizable root tree containing static virtual files with callbacks
+- No dynamic memory allocations (no memory leaks--no problems)
+- No internal buffers (support unlimited data stream lengths)
+- No static variables (making it possible to use multiple independent shells on a single system)
+- Compatible vith VT100 standard (works out of the box with default putty configuration)
+
+**WISHLIST**
+- ~~unit and functional tests (for greater certainty that nothing will break down)~~ 
+- ~~translation-ready (do You want Hindi translation? no problem!)~~
+
+
+## Using Picoshell
+
+### Define an I/O Interface:
+
+
+**Example Serial Interface:**
+```cpp
+// non-blocking read interface
+static int ush_read(struct ush_object *self, char *ch) {
+  // Implement as a FIFO
+  if (stdio_get_until(ch, BUF_IN_SIZE, PICO_ERROR_TIMEOUT) > 0) {
+    return 1;
+  }
+  return 0;
+}
+
+// non-blocking write interface
+static int ush_write(struct ush_object *self, char ch) {
+  // Implement as a FIFO
+  return (printf("%c", ch) == 1);
+}
+
+// I/O interface
+static const struct ush_io_interface ush_iface = {
+  .read = ush_read,
+  .write = ush_write,
+};
+```
+
+- [] TODO: Provide Example Interface using an I2C [display driver](#ssd1306-oled-display-driver)
+
+### Define the Shell instance:
+
+```cpp
+// Buffer sizes (size can be customized)
+#define BUF_IN_SIZE 128
+#define BUF_OUT_SIZE 128
+#define PATH_MAX_SIZE 128
+
+static char ush_in_buf[BUF_IN_SIZE];
+static char ush_out_buf[BUF_OUT_SIZE];
+
+// Picoshell instance handler
+static struct ush_object ush;
+
+// Picoshell descriptor
+static const struct ush_descriptor ush_desc = {
+  .io = &ush_iface,                           // I/O interface pointer
+  .input_buffer = ush_in_buf,                 // working input buffer
+  .input_buffer_size = sizeof(ush_in_buf),    // working input buffer size
+  .output_buffer = ush_out_buf,               // working output buffer
+  .output_buffer_size = sizeof(ush_out_buf),  // working output buffer size
+  .path_max_length = PATH_MAX_SIZE,           // path maximum length (stack)
+  .hostname = "Pico2",                        // hostname (in prompt)
+};
+
+// root directory handler
+static struct ush_node_object root;
+```
+
+### Setup and operation:
+
+```cpp
+void setup() {
+  // Uncomment the following line if using UART for the console
+  // setup_default_uart();
+  stdio_init_all();
+  ush_init(&ush, &ush_desc);
+  
+  // Mount directories (root must be first)
+  ush_node_mount(&ush, "/", &root, NULL, 0);
+}
+
+int main() {
+  setup();
+  while (1) {
+    ush_service(&ush);
+    /* Other non-blocking code goes here */
+  }
+  return 0;
+}
+```
+
+
+### Customization:
+
+In this example we will add a `bin` directory to our filesystem and two files we can execute to control the onboard led. To do requires a bit of setup. 
+
+First we must create callbacks for our shell to execute.
+```cpp
+// toggle file execute callback
+static void toggle_exec_callback(struct ush_object *self,
+                                 struct ush_file_descriptor const *file, int argc,
+                                 char *argv[]) {
+  // simple toggle led, without any arguments validation
+  gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN));
+}
+
+// set file execute callback
+static void set_exec_callback(struct ush_object *self,
+                              struct ush_file_descriptor const *file, int argc,
+                              char *argv[]) {
+  // arguments count validation
+  if (argc != 2) {
+    // return predefined error message
+    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    return;
+  }
+
+  // arguments validation
+  if (strcmp(argv[1], "1") == 0) {
+    gpio_put(PICO_DEFAULT_LED_PIN, 1);
+  } else if (strcmp(argv[1], "0") == 0) {
+    gpio_put(PICO_DEFAULT_LED_PIN, 0);
+  } else {
+    // return predefined error message
+    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    return;
+  }
+}
+```
+
+Then we create the `bin` directory:
+```cpp
+// bin directory files descriptor
+static const struct ush_file_descriptor bin_files[] = {
+    {
+        .name = "toggle",              // toggle file name
+        .description = "toggle led",   // optional file description
+        .help = "usage: toggle\r\n",   // optional help manual
+        .exec = toggle_exec_callback,  // optional execute callback
+    },
+    {.name = "set",  // set file name
+     .description = "set led",
+     .help = "usage: set {0,1}\r\n",
+     .exec = set_exec_callback},
+};
+
+// bin directory handler
+static struct ush_node_object bin;
+```
+
+Then during `setup()` we can mount bin to our filesystem:
+```cpp
+void setup() {
+  /* setup serial port and mount root */
+  ush_node_mount(&ush, "/bin", &bin, bin_files, sizeof(bin_files) / sizeof(bin_files[0]));
+}
+```
+For more examples, see `main.cpp`.
 
 
 # Drivers
@@ -57,10 +259,10 @@ Library for SSD1306 OLED display driver based on the works presented in the offi
 #include "ssd1306.hpp"
 
 int main() {
-    OLED oled = OLED(128, 64, true);
-    oled.print(0,0, (uint8_t*)"Hello World!");
-    oled.show();
-    return 0;
+  OLED oled = OLED(128, 64, true);
+  oled.print(0,0, (uint8_t*)"Hello World!");
+  oled.show();
+  return 0;
 }
 ```
 
@@ -71,17 +273,17 @@ int main() {
 #include "ssd1306.hpp"
 
 int main() {
-    OLED oled = OLED(128, 64, true);
+  OLED oled = OLED(128, 64, true);
 
-    // Draws an outline of the shape
-    oled.draw_rectangle(0, 0, 50, 30);
+  // Draws an outline of the shape
+  oled.draw_rectangle(0, 0, 50, 30);
 
-    // Draws a solid of the shape
-    oled.draw_filled_circle(64, 32, 10);
+  // Draws a solid of the shape
+  oled.draw_filled_circle(64, 32, 10);
 
-    oled.show();
+  oled.show();
 
-    return 0;
+  return 0;
 }
 ```
 
@@ -93,12 +295,12 @@ int main() {
 #include "bitmap.hpp"
 
 int main() {
-    OLED oled = OLED(128, 64, true);
+  OLED oled = OLED(128, 64, true);
 
-    oled.drawBitmap(0, 0, 32, 32, temperature_32x32);
-    oled.show();
+  oled.drawBitmap(0, 0, 32, 32, temperature_32x32);
+  oled.show();
 
-    return 0;
+  return 0;
 }
 ```
 

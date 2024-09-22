@@ -38,7 +38,7 @@ void scan_i2c_bus();
 static char ush_in_buf[BUF_IN_SIZE];
 static char ush_out_buf[BUF_OUT_SIZE];
 
-// microshell instance handler
+// Picoshell instance handler
 static struct ush_object ush;
 
 // non-blocking read interface
@@ -62,7 +62,7 @@ static const struct ush_io_interface ush_iface = {
     .write = ush_write,
 };
 
-// microshell descriptor
+// Picoshell descriptor
 static const struct ush_descriptor ush_desc = {
     .io = &ush_iface,                           // I/O interface pointer
     .input_buffer = ush_in_buf,                 // working input buffer
@@ -85,13 +85,7 @@ static void toggle_exec_callback(struct ush_object *self,
 static void reboot_exec_callback(struct ush_object *self,
                                  struct ush_file_descriptor const *file, int argc,
                                  char *argv[]) {
-#if defined(ARDUINO_ARCH_ESP32)
-  ESP.restart();
-#elif defined(ARDUINO_ARCH_AVR)
-  void (*reset)(void) = 0;
-  reset();
-#else
-  ush_print(self, "error: reboot not supported...");
+  ush_print(self, "ERROR: Reboot not supported...");
 #endif
 }
 
@@ -108,10 +102,8 @@ static void set_exec_callback(struct ush_object *self,
 
   // arguments validation
   if (strcmp(argv[1], "1") == 0) {
-    // turn led on
     gpio_put(PICO_DEFAULT_LED_PIN, 1);
   } else if (strcmp(argv[1], "0") == 0) {
-    // turn led off
     gpio_put(PICO_DEFAULT_LED_PIN, 0);
   } else {
     // return predefined error message
@@ -123,7 +115,7 @@ static void set_exec_callback(struct ush_object *self,
 // info file get data callback
 size_t info_get_data_callback(struct ush_object *self,
                               struct ush_file_descriptor const *file, uint8_t **data) {
-  static const char *info = "Use MicroShell and make fun!\r\n";
+  static const char *info = "Use Picoshell and make fun!\r\n";
 
   // return pointer to data
   *data = (uint8_t *)info;
@@ -134,7 +126,6 @@ size_t info_get_data_callback(struct ush_object *self,
 // led file get data callback
 size_t led_get_data_callback(struct ush_object *self,
                              struct ush_file_descriptor const *file, uint8_t **data) {
-  // read current led state
   bool state = gpio_get(PICO_DEFAULT_LED_PIN);
   // return pointer to data
   *data = (uint8_t *)((state) ? "1\r\n" : "0\r\n");
@@ -151,10 +142,8 @@ void led_set_data_callback(struct ush_object *self,
 
   // arguments validation
   if (data[0] == '1') {
-    // turn led on
     gpio_put(PICO_DEFAULT_LED_PIN, 1);
   } else if (data[0] == '0') {
-    // turn led off
     gpio_put(PICO_DEFAULT_LED_PIN, 0);
   }
 }
@@ -228,8 +217,10 @@ static const struct ush_file_descriptor cmd_files[] = {
 
 // root directory handler
 static struct ush_node_object root;
+
 // dev directory handler
 static struct ush_node_object dev;
+
 // bin directory handler
 static struct ush_node_object bin;
 
