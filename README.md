@@ -13,9 +13,18 @@ Tmux script still functions as intented.
 
 ### Prerequisites
 
+- your user is added to the `dialout` group.
+
+You can do this by running 
+```sh
+sudo usermod -a -G dialout $USER
+```
+
 - `tmux` (obviously)
 
 you can install tmux with the following command:
+
+
 
 #### Debian/Ubuntu
 
