@@ -9,6 +9,7 @@
 #include "ush/ush.h"
 #include "ush/ush_types.h"
 
+#define AIRCR_Register (*((volatile uint32_t*)(PPB_BASE + 0x0ED0C))) //for reboot
 /* Debug Symbols */
 #define DEBUG_AP33772 (false)
 #define DEBUG_STUSB4500 (false)
@@ -88,6 +89,8 @@ static void toggle_exec_callback(struct ush_object *self,
 static void reboot_exec_callback(struct ush_object *self,
                                  struct ush_file_descriptor const *file, int argc,
                                  char *argv[]) {
+
+  AIRCR_Register = 0x5FA0004;
   ush_print(self, "ERROR: Reboot not supported...");
 }
 
