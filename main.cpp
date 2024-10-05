@@ -92,7 +92,7 @@ static void toggle_exec_callback(struct ush_object *self,
 static void reboot_exec_callback(struct ush_object *self,
                                  struct ush_file_descriptor const *file, int argc,
                                  char *argv[]) {
-
+  // src: https://forums.raspberrypi.com/viewtopic.php?t=318747
   AIRCR_Register = 0x5FA0004;
   ush_print(self, "ERROR: Reboot not supported...");
 }
@@ -351,3 +351,4 @@ void scan_i2c_bus() {
   }
   printf("Done with i2c scan...\n");
 }
+
