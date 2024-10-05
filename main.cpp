@@ -6,6 +6,8 @@
 #include "i2c/i2c.hpp"
 #include "pico/stdlib.h"
 #include "ush/microshell.h"
+#include "ush/ush.h"
+#include "ush/ush_types.h"
 
 /* Debug Symbols */
 #define DEBUG_AP33772 (false)
@@ -32,9 +34,9 @@ void scan_i2c_bus();
 void scan_i2c_bus(uint sda, uint scl);
 
 // working buffers allocations (size could be customized)
-#define BUF_IN_SIZE 128
-#define BUF_OUT_SIZE 128
-#define PATH_MAX_SIZE 128
+#define BUF_IN_SIZE 512
+#define BUF_OUT_SIZE 512
+#define PATH_MAX_SIZE 256
 
 static char ush_in_buf[BUF_IN_SIZE];
 static char ush_out_buf[BUF_OUT_SIZE];
@@ -112,6 +114,8 @@ static void set_exec_callback(struct ush_object *self,
   }
 }
 
+bool reserved_addr(uint8_t addr) { return (addr & 0x78) == 0 || (addr & 0x78) == 0x78; }
+
 static void iscan_exec_callback(struct ush_object *self,
                               struct ush_file_descriptor const *file, int argc,
                               char *argv[]) {
@@ -120,10 +124,34 @@ static void iscan_exec_callback(struct ush_object *self,
     return;
   }
   uint sda = atoi(argv[1]);
+  if (sda >= 32 || sda < 0) {
+    ush_print(self, "error: Invalid SDA pin");
+    return;
+  }
+
   uint scl = atoi(argv[2]);
-  //TODO: check user input here
-  //FIXME: Sometimes this hangs...
-  scan_i2c_bus(sda, scl);
+  if (scl >= 32 || scl < 1) {
+    ush_print(self, "error: Invalid SCL pin");
+    return;
+  }
+  I2C i2c = I2C(sda, scl);
+
+  //NOTE: This is a refactor of `bus_scan.c` from the pico-examples
+  ush_printf(self, "...I2C Bus Scan...\n");
+  ush_printf(self, "   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \n");
+  for (int addr = 0; addr < (1 << 7); ++addr) {
+    if (addr % 16 == 0) ush_printf(self, "%02x ", addr);
+    int ret;
+    uint8_t rxdata;
+    if (reserved_addr(addr))
+      ret = PICO_ERROR_GENERIC;
+    else
+      ret = i2c.read_blocking(addr, &rxdata, 1, false);
+    ush_printf(self, ret < 0 ? "." : "@");
+    ush_printf(self, addr % 16 == 15 ? "\n" : "  ");
+  }
+  ush_printf(self, "Done with i2c scan...\n");
+  ush_flush(self);
   return;
 }
 
@@ -302,7 +330,6 @@ void forever_blink(void) {
   }
 }
 
-bool reserved_addr(uint8_t addr) { return (addr & 0x78) == 0 || (addr & 0x78) == 0x78; }
 
 void scan_i2c_bus() {
   I2C i2c = I2C();
@@ -320,23 +347,4 @@ void scan_i2c_bus() {
     printf(addr % 16 == 15 ? "\n" : "  ");
   }
   printf("Done with i2c scan...\n");
-}
-
-void scan_i2c_bus(uint sda, uint scl) {
-  I2C i2c = I2C(sda, scl, 10 * 1000);
-  printf("\n I2C Bus Scan\n");
-  printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \n");
-  for (int addr = 0; addr < (1 << 7); ++addr) {
-    if (addr % 16 == 0) printf("%02x ", addr);
-    int ret;
-    uint8_t rxdata;
-    if (reserved_addr(addr))
-      ret = PICO_ERROR_GENERIC;
-    else
-      ret = i2c.read_blocking(addr, &rxdata, 1, false);
-    printf(ret < 0 ? "." : "@");
-    printf(addr % 16 == 15 ? "\n" : "  ");
-  }
-  printf("Done with i2c scan...\n");
-
 }
