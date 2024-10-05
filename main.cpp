@@ -10,6 +10,7 @@
 #include "ush/ush_types.h"
 
 #define AIRCR_Register (*((volatile uint32_t*)(PPB_BASE + 0x0ED0C))) //for reboot
+
 /* Debug Symbols */
 #define DEBUG_AP33772 (false)
 #define DEBUG_STUSB4500 (false)
@@ -26,6 +27,8 @@
 #if DEBUG_SSD1306
 #include "ssd1306/bitmap.hpp"
 #include "ssd1306/ssd1306.hpp"
+
+OLED oled = OLED(64, 128, true);
 #endif
 
 /*Function Prototypes */
@@ -285,10 +288,7 @@ static struct ush_node_object cmd;
 
 int main() {
   setup();
-
 #if DEBUG_SSD1306
-  scan_i2c_bus();
-  OLED oled = OLED(64, 128, true);
   oled.draw_bitmap(0, 0, 40, 32, sun_with_clouds_40x32);
   oled.print(0, 36, (uint8_t *)"Hello World!");
   oled.show();
