@@ -6,6 +6,8 @@
 #include "i2c/i2c.hpp"
 #include "pico/stdlib.h"
 #include "ush/microshell.h"
+#include "ush/ush.h"
+#include "ush/ush_types.h"
 
 /* Debug Symbols */
 #define DEBUG_AP33772 (false)
@@ -29,11 +31,12 @@
 void setup(void);
 void forever_blink(void);
 void scan_i2c_bus();
+void scan_i2c_bus(uint sda, uint scl);
 
 // working buffers allocations (size could be customized)
-#define BUF_IN_SIZE 128
-#define BUF_OUT_SIZE 128
-#define PATH_MAX_SIZE 128
+#define BUF_IN_SIZE 512
+#define BUF_OUT_SIZE 512
+#define PATH_MAX_SIZE 256
 
 static char ush_in_buf[BUF_IN_SIZE];
 static char ush_out_buf[BUF_OUT_SIZE];
@@ -111,6 +114,47 @@ static void set_exec_callback(struct ush_object *self,
   }
 }
 
+bool reserved_addr(uint8_t addr) { return (addr & 0x78) == 0 || (addr & 0x78) == 0x78; }
+
+static void iscan_exec_callback(struct ush_object *self,
+                              struct ush_file_descriptor const *file, int argc,
+                              char *argv[]) {
+  if (argc != 3) {
+    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    return;
+  }
+  uint sda = atoi(argv[1]);
+  if (sda >= 32 || sda < 0) {
+    ush_print(self, "error: Invalid SDA pin");
+    return;
+  }
+
+  uint scl = atoi(argv[2]);
+  if (scl >= 32 || scl < 1) {
+    ush_print(self, "error: Invalid SCL pin");
+    return;
+  }
+  I2C i2c = I2C(sda, scl);
+
+  //NOTE: This is a refactor of `bus_scan.c` from the pico-examples
+  ush_printf(self, "...I2C Bus Scan...\n");
+  ush_printf(self, "   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \n");
+  for (int addr = 0; addr < (1 << 7); ++addr) {
+    if (addr % 16 == 0) ush_printf(self, "%02x ", addr);
+    int ret;
+    uint8_t rxdata;
+    if (reserved_addr(addr))
+      ret = PICO_ERROR_GENERIC;
+    else
+      ret = i2c.read_blocking(addr, &rxdata, 1, false);
+    ush_printf(self, ret < 0 ? "." : "@");
+    ush_printf(self, addr % 16 == 15 ? "\n" : "  ");
+  }
+  ush_printf(self, "Done with i2c scan...\n");
+  ush_flush(self);
+  return;
+}
+
 // info file get data callback
 size_t info_get_data_callback(struct ush_object *self,
                               struct ush_file_descriptor const *file, uint8_t **data) {
@@ -163,55 +207,65 @@ size_t time_get_data_callback(struct ush_object *self,
 }
 
 // root directory files descriptor
-static const struct ush_file_descriptor root_files[] = {{
+static const struct ush_file_descriptor root_files[] = {
+  {
     .name = "info.txt",  // info.txt file name
     .description = NULL,
     .help = NULL,
     .exec = NULL,
     .get_data = info_get_data_callback,
-}};
+  }
+};
 
 // bin directory files descriptor
 static const struct ush_file_descriptor bin_files[] = {
-    {
-        .name = "toggle",              // toggle file name
-        .description = "toggle led",   // optional file description
-        .help = "usage: toggle\r\n",   // optional help manual
-        .exec = toggle_exec_callback,  // optional execute callback
-    },
-    {.name = "set",  // set file name
-     .description = "set led",
-     .help = "usage: set {0,1}\r\n",
-     .exec = set_exec_callback},
+  {
+    .name = "toggle",              // toggle file name
+    .description = "toggle led",   // optional file description
+    .help = "usage: toggle\r\n",   // optional help manual
+    .exec = toggle_exec_callback,  // optional execute callback
+  },
+  {
+    .name = "set",  // set file name
+    .description = "set led",
+    .help = "usage: set {0,1}\r\n",
+    .exec = set_exec_callback
+  },
+  {
+    .name = "iscan",  // set file name
+    .description = "scans i2c bus.",
+    .help = "usage: iscan [sda] [scl]\r\n",
+    .exec = iscan_exec_callback
+  },
 };
 
 // dev directory files descriptor
 static const struct ush_file_descriptor dev_files[] = {
-    {
-        .name = "led",
-        .description = NULL,
-        .help = NULL,
-        .exec = NULL,
-        .get_data = led_get_data_callback,  // optional data getter callback
-        .set_data = led_set_data_callback,  // optional data setter callback
-    },
-    {
-        .name = "time",
-        .description = NULL,
-        .help = NULL,
-        .exec = NULL,
-        .get_data = time_get_data_callback,
-    },
+  {
+    .name = "led",
+    .description = NULL,
+    .help = NULL,
+    .exec = NULL,
+    .get_data = led_get_data_callback,  // optional data getter callback
+    .set_data = led_set_data_callback,  // optional data setter callback
+  },
+  {
+    .name = "time",
+    .description = NULL,
+    .help = NULL,
+    .exec = NULL,
+    .get_data = time_get_data_callback,
+  },
 };
 
 // cmd files descriptor
 static const struct ush_file_descriptor cmd_files[] = {
-    {
-        .name = "reboot",
-        .description = "reboot device",
-        .help = NULL,
-        .exec = reboot_exec_callback,
-    },
+  {
+    .name = "reboot",
+    .description = "reboot device",
+    .help = NULL,
+    .exec = reboot_exec_callback,
+  },
 };
 
 // root directory handler
@@ -239,14 +293,13 @@ int main() {
 
   while (1) {
     ush_service(&ush);
-    // forever_blink();
   }
 
   return 0;
 }
 
 void setup(void) {
-  setup_default_uart();
+  /*setup_default_uart();*/
   stdio_init_all();
   sleep_ms(2000);  // Internet suggests sleeping after calling stdio_init_all();
 
@@ -277,7 +330,6 @@ void forever_blink(void) {
   }
 }
 
-bool reserved_addr(uint8_t addr) { return (addr & 0x78) == 0 || (addr & 0x78) == 0x78; }
 
 void scan_i2c_bus() {
   I2C i2c = I2C();
