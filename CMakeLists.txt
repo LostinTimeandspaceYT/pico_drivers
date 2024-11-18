@@ -29,7 +29,6 @@ set(CMAKE_CXX_STANDARD 17)
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-
 # Add source files here
 add_executable(${NAME} main.cpp # <-- add source files here!
   ush/ush.c
@@ -61,6 +60,11 @@ add_executable(${NAME} main.cpp # <-- add source files here!
   ush/commands/ush_cmd_cat.c
   ush/commands/ush_cmd_xxd.c
   ush/commands/ush_cmd_echo.c
+  ush/picoshell.cpp
+  ush/picoshell_cmd.cpp
+  ush/node_root.cpp
+  ush/node_bin.cpp
+  ush/node_dev.cpp
 )
 
 # Include directories
