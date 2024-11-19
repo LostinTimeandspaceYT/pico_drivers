@@ -129,7 +129,6 @@ static void i2c_deinit_exec_callback(struct ush_object *self,
   port_num == 0 ? i2c0_is_init = false : i2c1_is_init = false;
 #endif
 
-  i2c_deinit((i2c_inst_t*)port_num);
   return;
 }
 
@@ -165,6 +164,7 @@ static void i2c_scan_exec_callback(struct ush_object *self,
     int ret;
     uint8_t rxdata;
 
+    //TODO: change read_blocking to a read_until and return error if timedout.
     if (reserved_addr(addr)) {
       ret = PICO_ERROR_GENERIC;
     } else {
@@ -202,14 +202,14 @@ static struct ush_node_object i2c;
 static const struct ush_file_descriptor i2c_files[] = {
   {
     .name = "init",
-    .description = "Initialize I2C peripherhal",
-    .help = "Initializes I2C device on pins SDA & SCL\r\nUsage: init [SDA] [SCL]\r\n",
+    .description = "Initialize I2C",
+    .help = "Initializes I2C port on pins SDA & SCL\r\nUsage: init [SDA] [SCL]\r\n",
     .exec = i2c_init_exec_callback,
   },
   {
     .name = "deinit",
-    .description = "Deinitialize I2C peripherhal",
-    .help = "Deinitializes I2C\r\nUsage: deinit [0|1]\r\n\n",
+    .description = "Deinitialize I2C",
+    .help = "Deinitializes I2C port 0 or 1\r\nUsage: deinit [0|1]\r\n\n",
     .exec = i2c_deinit_exec_callback,
   },
   {
