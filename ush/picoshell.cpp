@@ -62,7 +62,7 @@ void picoshell_init(void) {
   picoshell_root_mount();
   picoshell_dev_mount();
   picoshell_bin_mount();
- /*picoshell_i2c_mount();*/
+  picoshell_i2c_mount();
 }
 
 void picoshell_service() {

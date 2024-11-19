@@ -65,6 +65,7 @@ add_executable(${NAME} main.cpp # <-- add source files here!
   ush/node_root.cpp
   ush/node_bin.cpp
   ush/node_dev.cpp
+  ush/node_i2c.cpp
 )
 
 # Include directories
