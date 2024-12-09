@@ -73,6 +73,7 @@ static void i2c_init_exec_callback(struct ush_object *self,
     gpio_pull_up(sda);
     gpio_pull_up(scl);
     i2c_port == 1 ? i2c1_is_init = true : i2c0_is_init = true;
+    ush_printf(self, "I2C port %i initialized\r\n", i2c_port);
   }
   return;
 }
@@ -178,22 +179,44 @@ static void i2c_scan_exec_callback(struct ush_object *self,
   return;
 }
 
-size_t i2c_get_data_callback(struct ush_object *self,
-                             struct ush_file_descriptor const *file, uint8_t **data) {
-  if (!i2c0_is_init && !i2c1_is_init) {
-    ush_print(self, "ERROR: I2C PORTS NOT INITIALIZED!\r\n");
-    return 0;
+
+static void i2c_write_exec_callback(struct ush_object *self,
+                              struct ush_file_descriptor const *file, int argc,
+                              char *argv[]) {
+  if (argc != 5) {
+    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    return;
   }
-  static char i2c_buf[16];
+  uint port = atoi(argv[1]);
 
-  //TODO: Grab data from I2C port and store in buffer.
-  snprintf(i2c_buf, sizeof(i2c_buf), "%s", i2c_buf);
+  i2c_inst_t* i2c = i2c_get_instance(port);
+  if (i2c == NULL) {
+    ush_print(self, "ERROR: Could not find I2C instance.");
+    return;
+  }
 
-  *data = (uint8_t*) i2c_buf;
+  if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
+    ush_print(self, "ERROR: I2C port must be initialized before scanning.\r\n");
+    return;
+  }
 
-  return strlen((char *)(*data));
+  //NOTE: A bit of delay is added to prevent the serial port from hanging.
+  int await = millis();
+  while (millis() - await < 5);
+
+  //NOTE: strtol is used cuz we expect the address in hexadecimal.
+  uint address = (uint)strtol(argv[2], NULL, 16);
+
+  uint buf_len = atoi(argv[3]);
+
+  long data = strtol(argv[4], NULL, 16);
+
+  ush_printf(self, "sending 0x%X to address: 0x%X\n", data, address);
+
+  i2c_write_blocking(i2c, address, (uint8_t*)&data, buf_len, false);
+
+  return;
 }
-
 
 // i2c directory handler
 static struct ush_node_object i2c;
@@ -218,6 +241,12 @@ static const struct ush_file_descriptor i2c_files[] = {
     .help = "Scans the I2C bus for any available devices.\r\nUsage: scan [0|1]\r\n\n",
     .exec = i2c_scan_exec_callback,
   },
+  {
+    .name = "write",
+    .description = "Write hex data to I2C device",
+    .help = "Usage: write [0|1] [addr] [dat_len] [data]\r\n",
+    .exec = i2c_write_exec_callback,
+  }
 };
 
 extern struct ush_object ush;
