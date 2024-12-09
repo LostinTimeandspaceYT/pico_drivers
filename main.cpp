@@ -1,3 +1,10 @@
+/** @file main.cpp
+ *
+ * @brief Entry point into the program
+ *
+ * @author Nathan Winslow
+ */
+
 
 #include "pico/stdlib.h"
 #include "ush/picoshell.h"
