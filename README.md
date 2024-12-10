@@ -7,6 +7,11 @@
 I was able to compile my drivers on the new version of the sdk. I was not able to get the vscode extension to import the project properly. The error arises from `ninja` failing to create the necessary build files for cross-compilation. Current workaround is to create a new project and manually copy the code over.
 Tmux script still functions as intented.
 
+**12/10/24**
+Due to changes made to `openocd` by RaspberryPi, the `tmux_debug` has temporarily been borked. If you're using Raspberry Pi OS, it should still work as intended. Other distros (such as Ubuntu) do not have the up-to-date packages, but should hopefully soon. For more information regarding this issue, see [here](https://github.com/raspberrypi/pico-feedback/issues/432#issuecomment-2512351689).
+
+I have created a temporary workaround, detailed below.
+
 
 ## Tmux Debug Script
 *A script used to simplify the debugging process without the need for an IDE*
@@ -47,6 +52,36 @@ When using the `tmux_debug.sh` to debug, be sure `openocd` can be run with sudo 
     `user_name ALL=(ALL) NOPASSWD:/usr/bin/openocd`
     **Note:** replace `user_name` with your username.
 3. Save the file.
+
+**NOTE:** If you are building openocd from source, the bin location defaults to `/usr/local/bin/openocd`
+
+
+### Dec 10 workaround
+
+To get the script to work after the changes made to `openocd`, you will need to build `openocd` from source.
+
+```sh
+git clone https://github.com/raspberrypi/openocd.git
+cd openocd
+./bootstrap
+./configure --disable-werror
+make -j4
+sudo make install # NOT mentioned in the official documentation!!!
+```
+
+The target configuration will need to be updated depending on what MCU you are targeting.
+
+For RP2350:
+```sh
+sudo openocd -s tcl -f interface/cmsis-dap.cfg -f target/rp2350.cfg -c "adapter speed 5000"
+```
+
+For RP2040:
+```sh
+sudo openocd -s tcl -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000"
+```
+
+For more information, check Appendix A in the [getting started guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf).
 
 ## Build Script
 

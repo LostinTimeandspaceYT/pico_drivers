@@ -22,7 +22,8 @@ tmux new-session -d -s pico_debug
 
 # Create a pane for OpenOCD 
 # NOTE: Check the README for information regarding openocd.
-tmux send-keys -t pico_debug "openocd -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c \"adapter speed 5000\"" Enter
+# AS of Dec 10, 24: Openocd must be built from source.
+tmux send-keys -t pico_debug "sudo openocd -s tcl -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c \"adapter speed 5000\"" Enter
 
 # Create a pane for minicom
 tmux split-window -h -t pico_debug
