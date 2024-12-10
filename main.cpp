@@ -8,7 +8,12 @@
 
 #include "pico/stdlib.h"
 #include "ush/picoshell.h"
+#include "lcd/i2c_lcd/i2c_lcd.hpp"
+#include "i2c/i2c.hpp"
 
+I2C i2c = I2C(4, 5);
+I2CLCD lcd = I2CLCD(&i2c, 0x27, 20, 4);
+char str[] = "hello world!\n";
 
 /*Function Prototypes */
 void setup(void);
@@ -17,7 +22,7 @@ int main() {
   setup();
 
   while (1) {
-    picoshell_service();
+    /*picoshell_service();*/
   }
 
   return 0;
@@ -33,6 +38,8 @@ void setup(void) {
   gpio_set_dir(PICO_DEFAULT_LED_PIN, true);
   gpio_put(PICO_DEFAULT_LED_PIN, 1);
 
-  picoshell_init();
+  lcd.put_str((uint8_t *)str);
+
+  /*picoshell_init();*/
 }
 

@@ -15,7 +15,7 @@ endif()
 cmake_minimum_required(VERSION 3.13)
 
 set(NAME my_project) # <-- change as needed.
-set(PICO_BOARD pico2 CACHE STRING "Board type")
+set(PICO_BOARD pico CACHE STRING "Board type")
 
 # initialize the SDK based on PICO_SDK_PATH note: this must happen before
 # project()
@@ -74,6 +74,7 @@ add_subdirectory(./ap33772)
 add_subdirectory(./stusb4500)
 add_subdirectory(./ssd1306)
 add_subdirectory(./ush)
+add_subdirectory(./lcd/i2c_lcd)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(${NAME} 0)
@@ -87,6 +88,7 @@ target_link_libraries(${NAME}
     stusb4500 
     ssd1306 
     ush
+    i2c_lcd
 )
 
 # create map/bin/hex/uf2 file in addition to ELF
