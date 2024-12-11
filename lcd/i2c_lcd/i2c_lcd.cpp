@@ -1,27 +1,21 @@
 #include "i2c_lcd.hpp"
+#include <cstdio>
+
+#define SLEEP_TIME_MS (5)
 
 
-I2CLCD::I2CLCD(I2C* i2c, uint8_t addr, uint8_t num_rows, uint8_t num_cols) :
-  i2c(i2c),
-  addr(addr),
-  num_rows(num_rows),
-  num_cols(num_cols),
-  cursor_x(0),
-  cursor_y(0),
-  nl_reached(false) {
-  i2c->write_blocking(addr, 0x00, 1, false);
+I2CLCD::I2CLCD(uint8_t num_rows, uint8_t num_cols) : LCD(num_rows, num_cols)
+{
+  I2C i2c = I2C();
+  is_backlight = true;
 
-  uint32_t wait = millis();
-  while (millis() - wait < 20);
-
-  write_nibble(LCD_FUNCTION_RESET);
-
-  wait = millis();
-  while (millis() - wait < 5);
+  i2c.write_blocking(LCD_I2C_ADDRESS, 0x00, 1, false);
 
   //NOTE: Not sure why this is necessary, but it is.
   write_nibble(LCD_FUNCTION_RESET);
   write_nibble(LCD_FUNCTION_RESET);
+  write_nibble(LCD_FUNCTION_RESET);
+
   write_nibble(LCD_FUNCTION);
 
   uint8_t cmd = LCD_FUNCTION;
@@ -32,50 +26,56 @@ I2CLCD::I2CLCD(I2C* i2c, uint8_t addr, uint8_t num_rows, uint8_t num_cols) :
 void I2CLCD::write_nibble(uint8_t nibble) {
   uint8_t byte = ((nibble >> 4) & 0x0f) << SHIFT_DATA;
   uint8_t b_mask = byte | MASK_E;
-  i2c->write_blocking(addr, &b_mask, 1, false);
-  i2c->write_blocking(addr, &byte, 1, false);
+  printf("writing nibble: 0x%X to 0x%X\n", byte, b_mask);
+  sleep_ms(SLEEP_TIME_MS);
+  i2c.reg_write_uint8(LCD_I2C_ADDRESS, b_mask, byte);
   return;
 }
 
 void I2CLCD::write_command(uint8_t cmd) {
   uint8_t b = ((is_backlight << SHIFT_BACKLIGHT) | (((cmd >> 4) & 0x0f) << SHIFT_DATA));
   uint8_t b_mask = b | MASK_E;
-  i2c->write_blocking(addr, &b_mask, 1, false);
-  i2c->write_blocking(addr, &b, 1, false);
+  printf("writing command: 0x%X to 0x%X\n", b, b_mask);
+  sleep_ms(SLEEP_TIME_MS);
+  i2c.reg_write_uint8(LCD_I2C_ADDRESS, b_mask, b);
 
   b = ((is_backlight << SHIFT_BACKLIGHT) | ((cmd & 0x0f) << SHIFT_DATA));
   b_mask = b | MASK_E;
-  i2c->write_blocking(addr, &b_mask, 1, false);
-  i2c->write_blocking(addr, &b, 1, false);
+  printf("writing command: 0x%X to 0x%X\n", b, b_mask);
+  sleep_ms(SLEEP_TIME_MS);
+  i2c.reg_write_uint8(LCD_I2C_ADDRESS, b_mask, b);
 
   //The home and clear commands require a worst case delay of 4.1 milliseconds.
   if (cmd <= 3) {
-    uint32_t wait = millis();
-    while (millis() - wait < 5);
+    sleep_ms(SLEEP_TIME_MS);
+    /*uint32_t wait = millis();*/
+    /*while (millis() - wait < 5);*/
   }
 }
 
 void I2CLCD::write_data(uint8_t data) {
   uint8_t b = (MASK_RS | (is_backlight << SHIFT_BACKLIGHT) | (((data >> 4) & 0x0f) << SHIFT_DATA));
   uint8_t b_mask = b | MASK_E;
-  i2c->write_blocking(addr, &b_mask, 1, false);
-  i2c->write_blocking(addr, &b, 1, false);
+  printf("writing data: 0x%X to 0x%X\n", b, b_mask);
+  sleep_ms(SLEEP_TIME_MS);
+  i2c.reg_write_uint8(LCD_I2C_ADDRESS, b_mask, b);
 
   b = (MASK_RS | (is_backlight << SHIFT_BACKLIGHT) | ((data & 0x0f) << SHIFT_DATA));
   b_mask = b | MASK_E;
-  i2c->write_blocking(addr, &b_mask, 1, false);
-  i2c->write_blocking(addr, &b, 1, false);
+  printf("writing data: 0x%X to 0x%X\n", b, b_mask);
+  sleep_ms(SLEEP_TIME_MS);
+  i2c.reg_write_uint8(LCD_I2C_ADDRESS, b_mask, b);
   return;
 }
 
 void I2CLCD::backlight(bool on) {
   if (on) {
     uint8_t b = 1 << SHIFT_BACKLIGHT;
-    i2c->write_blocking(addr, &b, 1, false);
+    i2c.write_blocking(LCD_I2C_ADDRESS, &b, 1, false);
     is_backlight = true;
     return;
   }
-  i2c->write_blocking(addr, 0x00, 1, false);
+  i2c.write_blocking(LCD_I2C_ADDRESS, 0x00, 1, false);
   is_backlight = false;
   return;
 }

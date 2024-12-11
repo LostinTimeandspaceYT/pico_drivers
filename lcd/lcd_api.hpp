@@ -8,6 +8,19 @@
 class LCD {
 
 public:
+
+  LCD(uint8_t row_cnt, uint8_t col_cnt) : 
+    num_rows(row_cnt), num_cols(col_cnt), 
+    cursor_x(0), cursor_y(0), 
+    nl_reached(false) 
+  {
+    display_off();
+    backlight(true);
+    clear();
+    write_command(LCD_ENTRY_MODE | LCD_ENTRY_INC);
+    hide_cursor();
+    display_on();
+  }
   virtual ~LCD() {}
 
   /**
@@ -16,7 +29,7 @@ public:
    *
    * @param cmd 
    */
-  virtual void write_command(uint8_t cmd) = 0;
+  virtual void write_command(uint8_t cmd) {return;}
   /**
    * @brief Write data, such as character strings, to the LCD. Child classes
    * must implement this method.
@@ -26,6 +39,7 @@ public:
   virtual void write_data(uint8_t data) = 0;
 
   virtual void clear() { 
+    printf("clearing display\n");
     write_command(LCD_CLR);
     write_command(LCD_HOME);
     cursor_x = 0;
@@ -34,31 +48,37 @@ public:
   }
 
   virtual void show_cursor() {
+    printf("showing cursor\n");
     write_command(LCD_ON_CTRL | LCD_ON_DISPLAY | LCD_ON_CURSOR);
     return;
   }
 
   virtual void hide_cursor() { 
+    printf("hiding cursor\n");
     write_command(LCD_ON_CTRL | LCD_ON_DISPLAY);
     return;
   }
 
   virtual void blink_cursor_on() {
+    printf("blink cursor on\n");
     write_command(LCD_ON_CTRL | LCD_ON_DISPLAY | LCD_ON_CURSOR | LCD_ON_BLINK);
     return;
   }
 
   virtual void blink_cursor_off() {
+    printf("blink cursor off\n");
     write_command(LCD_ON_CTRL | LCD_ON_DISPLAY | LCD_ON_CURSOR);
     return;
   }
 
   virtual void display_on() {
+    printf("turning display on\n");
     write_command(LCD_ON_CTRL | LCD_ON_DISPLAY);
     return;
   }
 
   virtual void display_off() {
+    printf("turning display off\n");
     write_command(LCD_ON_CTRL);
     return;
   }
@@ -87,6 +107,7 @@ public:
   }
 
   virtual void put_char(uint8_t c) {
+    printf("put char %c\n", c);
 
     if (c == '\n') {
       nl_reached ? nl_reached = false : cursor_x = num_cols;

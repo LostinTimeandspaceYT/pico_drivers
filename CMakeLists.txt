@@ -15,7 +15,7 @@ endif()
 cmake_minimum_required(VERSION 3.13)
 
 set(NAME my_project) # <-- change as needed.
-set(PICO_BOARD pico CACHE STRING "Board type")
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 # initialize the SDK based on PICO_SDK_PATH note: this must happen before
 # project()
