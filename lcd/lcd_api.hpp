@@ -1,7 +1,11 @@
 /**
  * @file
  * @brief 
- */
+*/
+
+#ifndef _LCD_API_H_
+#define _LCD_API_H_
+
 
 #include "HD44780.h"
 #include <cstring>
@@ -145,3 +149,5 @@ public:
   bool nl_reached; //used to determine wraparound point.
 
 };
+
+#endif //end _LCD_API_H_

@@ -1,3 +1,11 @@
+/**
+ * @file i2c_lcd.hpp
+ * @brief this module defines an interface to an LCD with an I2C backpack.
+*/
+
+#ifndef _I2C_LCD_H_
+#define _I2C_LCD_H_
+
 #include "../../i2c/i2c.hpp"
 #include "../lcd_api.hpp"
 
@@ -27,10 +35,6 @@ private:
   I2C i2c;
   bool is_backlight;
 
-public:
-  /*uint8_t num_rows;*/
-  /*uint8_t num_cols;*/
-  /*uint8_t cursor_x;*/
-  /*uint8_t cursor_y;*/
-  /*bool nl_reached; //used to determine wraparound point.*/
 };
+
+#endif //end _I2C_LCD_H_
