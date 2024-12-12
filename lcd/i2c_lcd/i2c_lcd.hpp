@@ -17,12 +17,10 @@ public:
   I2CLCD(uint8_t num_rows, uint8_t num_cols);
   ~I2CLCD() {}
 
+  /* Derived methods */
   void write_command(uint8_t cmd);
-
   void write_data(uint8_t data);
-
   void write_nibble(uint8_t nibble);
-
   void backlight(bool on);
 
 private:
@@ -30,9 +28,9 @@ private:
   bool is_backlight;
 
 public:
-  uint8_t num_rows;
-  uint8_t num_cols;
-  uint8_t cursor_x;
-  uint8_t cursor_y;
-  bool nl_reached; //used to determine wraparound point.
+  /*uint8_t num_rows;*/
+  /*uint8_t num_cols;*/
+  /*uint8_t cursor_x;*/
+  /*uint8_t cursor_y;*/
+  /*bool nl_reached; //used to determine wraparound point.*/
 };
