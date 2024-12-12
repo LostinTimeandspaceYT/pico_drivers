@@ -42,29 +42,29 @@ static void i2c_init_exec_callback(struct ush_object *self,
   }
   uint sda = atoi(argv[1]);
   if (sda >= 26 || sda < 0) {
-    ush_print(self, "ERROR: Invalid SDA pin");
+    ush_print(self, (char*)"ERROR: Invalid SDA pin");
     return;
   }
 
   uint scl = atoi(argv[2]);
   if (scl >= 27 || scl < 1) {
-    ush_print(self, "ERROR: Invalid SCL pin");
+    ush_print(self, (char*)"ERROR: Invalid SCL pin");
     return;
   }
 
   i2c_inst_t* i2c = pin_to_inst(sda);
   if (i2c == NULL) {
-    ush_print(self, "ERROR: Could not find I2C instance.");
+    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
     return;
   }
 
   uint i2c_port = i2c_get_index(i2c);
 
   if (i2c_port == 0 && i2c0_is_init) {
-    ush_print(self, "I2C0 port already initialized.\r\n");
+    ush_print(self, (char*)"I2C0 port already initialized.\r\n");
   } 
   else if (i2c_port == 1 && i2c1_is_init) {
-    ush_print(self, "I2C1 port already initialized.\r\n");
+    ush_print(self, (char*)"I2C1 port already initialized.\r\n");
   }
   else {
     i2c_init(i2c, 400 * 1000); //defaults to 400KHz baudrate
@@ -91,18 +91,18 @@ static void i2c_deinit_exec_callback(struct ush_object *self,
   port_num >= 1 ? port_num = 1 : port_num = 0;
 
   if (!i2c0_is_init && port_num == 0) {
-    ush_print(self, "ERROR: I2C port 0 must be initialized before deinitializing.\r\n");
+    ush_print(self, (char*)"ERROR: I2C port 0 must be initialized before deinitializing.\r\n");
     return;
   }
 
   if (!i2c1_is_init && port_num == 1) {
-    ush_print(self, "ERROR: I2C port 1 must be initialized before deinitializing.\r\n");
+    ush_print(self, (char*)"ERROR: I2C port 1 must be initialized before deinitializing.\r\n");
     return;
   }
 
   i2c_inst_t* i2c = i2c_get_instance(port_num);
   if (i2c == NULL) {
-    ush_print(self, "ERROR: Could not find I2C instance.");
+    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
     return;
   }
 
@@ -144,12 +144,12 @@ static void i2c_scan_exec_callback(struct ush_object *self,
 
   i2c_inst_t* i2c = i2c_get_instance(port);
   if (i2c == NULL) {
-    ush_print(self, "ERROR: Could not find I2C instance.");
+    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
     return;
   }
 
   if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
-    ush_print(self, "ERROR: I2C port must be initialized before scanning.\r\n");
+    ush_print(self, (char*)"ERROR: I2C port must be initialized before scanning.\r\n");
     return;
   }
 
@@ -191,12 +191,12 @@ static void i2c_write_exec_callback(struct ush_object *self,
 
   i2c_inst_t* i2c = i2c_get_instance(port);
   if (i2c == NULL) {
-    ush_print(self, "ERROR: Could not find I2C instance.");
+    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
     return;
   }
 
   if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
-    ush_print(self, "ERROR: I2C port must be initialized before scanning.\r\n");
+    ush_print(self, (char*)"ERROR: I2C port must be initialized before scanning.\r\n");
     return;
   }
 

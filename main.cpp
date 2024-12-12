@@ -8,13 +8,20 @@
 
 #include "pico/stdlib.h"
 #include "ush/picoshell.h"
+#include "lcd/i2c_lcd/i2c_lcd.hpp"
 
+char str[] = "hello world!\n";
 
 /*Function Prototypes */
 void setup(void);
 
 int main() {
   setup();
+  I2CLCD lcd = I2CLCD(4, 20);
+  lcd.put_str(str);
+
+  lcd.show_cursor();
+  lcd.blink_cursor_on();
 
   while (1) {
     picoshell_service();
