@@ -9,7 +9,6 @@
 #include "pico/stdlib.h"
 #include "ush/picoshell.h"
 #include "lcd/i2c_lcd/i2c_lcd.hpp"
-#include "i2c/i2c.hpp"
 
 char str[] = "hello world!\n";
 
@@ -18,10 +17,11 @@ void setup(void);
 
 int main() {
   setup();
-  sleep_ms(500);
-  I2CLCD lcd = I2CLCD(20, 4);
-  sleep_ms(500);
+  I2CLCD lcd = I2CLCD(4, 20);
+  lcd.put_str(str);
 
+  lcd.show_cursor();
+  lcd.blink_cursor_on();
 
   while (1) {
     picoshell_service();
