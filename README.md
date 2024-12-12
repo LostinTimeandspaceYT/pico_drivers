@@ -348,13 +348,44 @@ int main() {
 }
 ```
 
-
 #### Other Cool Stuff
 
 - You can create your own [custom fonts](http://oleddisplay.squix.ch/#/home).
 
 - You can modifty characters using the [Adafruit Font Customizer](https://tchapi.github.io/Adafruit-GFX-Font-Customiser/).
 
+### LCD: Liquid Crystal Display
+
+The `LCD` class acts as a HAL for various HD44780-based LCDs. Child classes are responsible for implementing how data is sent to the display. The API is similar to that found in the `LiquidCrystal` Arduino library.
+
+#### Getting started
+
+As mentioned previously, this library is divided into two sections, the HAL, and the driver. The HAL implements a common API that is useful for all HD44780-based displays. Some displays have an I2C or SPI adapter, some have no adapter and must be connected to all ~16 pins.
+
+
+#### I2C LCD
+
+This examples displays `hello world!`.
+
+```cpp
+#include "pico/stdlib.h"
+#include "lcd/i2c_lcd/i2c_lcd.hpp"
+
+char str[] = "hello world!\n";
+
+/*Function Prototypes */
+void setup(void);
+
+int main() {
+  I2CLCD lcd = I2CLCD(4, 20);
+  lcd.put_str(str);
+
+  lcd.show_cursor();
+  lcd.blink_cursor_on();
+
+  return 0;
+}
+```
 
 ## USB-PD
 
