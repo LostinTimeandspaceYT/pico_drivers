@@ -4,7 +4,6 @@
 
 /*#define LCD_PRINT_DEBUG*/
 
-
 I2CLCD::I2CLCD(uint8_t num_rows, uint8_t num_cols) : LCD(num_rows, num_cols), i2c(I2C()), is_backlight(true) {
   i2c.write_blocking(LCD_I2C_ADDRESS, 0x00, 1, false);
   write_nibble(LCD_FUNCTION_RESET);
@@ -13,7 +12,8 @@ I2CLCD::I2CLCD(uint8_t num_rows, uint8_t num_cols) : LCD(num_rows, num_cols), i2
   clear();
 
   write_command(LCD_ENTRY_MODE | LCD_ENTRY_INC);
-  sleep_ms(SLEEP_TIME_MS);
+  int wait_time = millis();
+  delay_ms(SLEEP_TIME_MS);
   hide_cursor();
   display_on();
 
@@ -28,9 +28,9 @@ void I2CLCD::write_nibble(uint8_t nibble) {
 #if defined (LCD_PRINT_DEBUG)
   printf("writing nibble: 0x%X to 0x%X\n", byte, b_mask);
 #endif
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &b_mask, 1, false);
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &byte, 1, false);
   
   return;
@@ -44,9 +44,9 @@ void I2CLCD::write_command(uint8_t cmd) {
   printf("writing command: 0x%X to 0x%X\n", b, b_mask);
 #endif
 
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &b_mask, 1, false);
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &b, 1, false);
 
   b = ((is_backlight << SHIFT_BACKLIGHT) | ((cmd & 0x0f) << SHIFT_DATA));
@@ -56,14 +56,14 @@ void I2CLCD::write_command(uint8_t cmd) {
   printf("writing command: 0x%X to 0x%X\n", b, b_mask);
 #endif
 
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &b_mask, 1, false);
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &b, 1, false);
 
   //The home and clear commands require a worst case delay of 4.1 milliseconds.
   if (cmd <= 3) {
-    sleep_ms(SLEEP_TIME_MS);
+    delay_ms(SLEEP_TIME_MS);
   }
   return;
 }
@@ -77,9 +77,9 @@ void I2CLCD::write_data(uint8_t data) {
 #endif
 
   i2c.write_blocking(LCD_I2C_ADDRESS, &b_mask, 1, false);
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &b, 1, false);
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
 
   b = (MASK_RS | (is_backlight << SHIFT_BACKLIGHT) | ((data & 0x0f) << SHIFT_DATA));
   b_mask = b | MASK_E;
@@ -89,7 +89,7 @@ void I2CLCD::write_data(uint8_t data) {
 #endif
 
   i2c.write_blocking(LCD_I2C_ADDRESS, &b_mask, 1, false);
-  sleep_ms(SLEEP_TIME_MS);
+  delay_ms(SLEEP_TIME_MS);
   i2c.write_blocking(LCD_I2C_ADDRESS, &b, 1, false);
   return;
 }
