@@ -7,6 +7,7 @@
 
 static char ush_in_buf[BUF_IN_SIZE];
 static char ush_out_buf[BUF_OUT_SIZE];
+static char hostname[] = "Pico2"; //Change to your platform of choice
 
 // Picoshell instance handler
 struct ush_object ush;
@@ -40,7 +41,7 @@ static const struct ush_descriptor ush_desc = {
     .output_buffer = ush_out_buf,               // working output buffer
     .output_buffer_size = sizeof(ush_out_buf),  // working output buffer size
     .path_max_length = PATH_MAX_SIZE,           // path maximum length (stack)
-    .hostname = "Pico2",                        // hostname (in prompt)
+    .hostname = hostname,                        // hostname (in prompt)
 };
 
 extern void picoshell_cmds_add(void);
