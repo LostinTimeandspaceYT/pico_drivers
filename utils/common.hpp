@@ -39,6 +39,11 @@ static constexpr uint SPI_DEFAULT_CS = PICO_DEFAULT_SPI_CSN_PIN;
 /* Based on the Arduino function */
 inline uint32_t millis() { return to_ms_since_boot(get_absolute_time()); }
 
+inline void delay_ms(uint32_t msecs) {
+  uint32_t start_t = millis();
+  while ((millis() - start_t) < msecs);
+}
+
 struct pin_pair {
   union {
     uint8_t first;
