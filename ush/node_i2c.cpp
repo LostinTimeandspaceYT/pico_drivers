@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
@@ -196,7 +197,7 @@ static void i2c_write_exec_callback(struct ush_object *self,
   }
 
   if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
-    ush_print(self, (char*)"ERROR: I2C port must be initialized before scanning.\r\n");
+    ush_printf(self, "ERROR: I2C port %d must be initialized before reading.\r\n", port);
     return;
   }
 
@@ -217,6 +218,43 @@ static void i2c_write_exec_callback(struct ush_object *self,
 
   return;
 }
+
+static void i2c_read_exec_callback(struct ush_object *self,
+                              struct ush_file_descriptor const *file, int argc,
+                              char *argv[]) {
+
+  if (argc != 4) {
+    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    return;
+  }
+  uint port = atoi(argv[1]);
+
+  i2c_inst_t* i2c = i2c_get_instance(port);
+  if (i2c == NULL) {
+    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
+    return;
+  }
+
+  if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
+    ush_printf(self, "ERROR: I2C port %d must be initialized before reading.\r\n", port);
+    return;
+  }
+
+  int await = millis();
+  while (millis() - await < 5);
+
+  uint address = (uint)strtol(argv[2], NULL, 16);
+  uint buf_len = atoi(argv[3]);
+  uint8_t buf[buf_len];
+
+  i2c_read_blocking(i2c, address, buf, buf_len, false);
+  for (int i = 0; i < sizeof(buf); ++i) {
+    ush_printf(self, "0x%X, ", buf[i]);
+  }
+  ush_printf(self, "\r\n%X: %s\r\n", address, buf);
+  return;
+}
+
 
 // i2c directory handler
 static struct ush_node_object i2c;
@@ -244,8 +282,14 @@ static const struct ush_file_descriptor i2c_files[] = {
   {
     .name = "write",
     .description = "Write hex data to I2C device",
-    .help = "Usage: write [0|1] [addr] [dat_len] [data]\r\n",
+    .help = "Usage: write [port 0|1] [addr] [dat_len] [data]\r\n",
     .exec = i2c_write_exec_callback,
+  },
+  {
+    .name = "read",
+    .description = "read hex data from I2C device",
+    .help = "Usage: read [port 0|1] [addr] [num_bytes]\r\nExample: read 0 27 2\r\nRead 2 bytes from address 0x27 on port 0\r\n",
+    .exec = i2c_read_exec_callback,
   }
 };
 
