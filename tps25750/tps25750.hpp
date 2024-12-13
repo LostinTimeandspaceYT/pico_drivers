@@ -46,7 +46,7 @@ class TPS25750 {
   static TPS25750 *inst;
 
   static TPS25750 *get_instance() {
-    if (nullptr == inst) {
+    if (inst == nullptr) {
       inst = new TPS25750();
     }
     return inst;
