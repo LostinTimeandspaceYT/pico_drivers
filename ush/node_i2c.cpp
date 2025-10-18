@@ -16,7 +16,7 @@
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
 #include "picoshell.h"
-#include "../utils/common.hpp"
+#include <pico_drivers/utils/common.hpp>
 #include "ush.h"
 
 static const uint i2c0_pins[] = {0,1,4,5,8,9,12,13,16,17,20,21};

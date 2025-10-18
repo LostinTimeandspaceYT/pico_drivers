@@ -46,29 +46,35 @@ pico_sdk_init()
 # Main application sources
 add_executable(${PROJECT_NAME} main.cpp)
 
-set(DRIVER_DIRS
-    i2c
-    ap33772
-    stusb4500
-    ssd1306
-    ush
-    lcd/i2c_lcd
-    tps25750
+add_library(pico_drivers_utils INTERFACE)
+add_library(pico_drivers::utils ALIAS pico_drivers_utils)
+target_include_directories(pico_drivers_utils
+    INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
-foreach(dir ${DRIVER_DIRS})
-    add_subdirectory(${dir})
+# List driver libraries and their directory relative paths as <lib>:<subdir>
+set(DRIVER_MODULES
+    "i2c:i2c"
+    "ap33772:drivers/usb_pd/ap33772"
+    "stusb4500:drivers/usb_pd/stusb4500"
+    "ssd1306:drivers/display/ssd1306"
+    "i2c_lcd:drivers/display/i2c_lcd"
+    # "tps25750:drivers/usb_pd/tps25750"
+)
+
+set(DRIVER_LIBS)
+
+foreach(module ${DRIVER_MODULES})
+    string(REPLACE ":" ";" module_parts "${module}")
+    list(GET module_parts 0 DRIVER_LIB)
+    list(GET module_parts 1 DRIVER_SUBDIR)
+    add_subdirectory(${DRIVER_SUBDIR})
+    list(APPEND DRIVER_LIBS ${DRIVER_LIB})
 endforeach()
 
-set(DRIVER_LIBS
-    i2c
-    ap33772
-    stusb4500
-    ssd1306
-    ush
-    i2c_lcd
-    tps25750
-)
+add_subdirectory(ush)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
@@ -79,6 +85,7 @@ target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     hardware_i2c
     ${DRIVER_LIBS}
+    ush
 )
 
 # create map/bin/hex/uf2 file in addition to ELF

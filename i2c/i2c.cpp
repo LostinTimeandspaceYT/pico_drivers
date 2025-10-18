@@ -1,4 +1,4 @@
-#include "i2c.hpp"
+#include <pico_drivers/i2c/i2c.hpp>
 
 void I2C::init() {
   i2c = pin_to_inst(sda);

@@ -1,6 +1,6 @@
 
 #include "pico/stdlib.h"
-#include "ssd1306/ssd1306.hpp"
+#include <pico_drivers/display/ssd1306/ssd1306.hpp>
 #include "ush/picoshell.h"
 
 static OLED oled_display(64, 128, false);

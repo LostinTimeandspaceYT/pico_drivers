@@ -50,8 +50,12 @@ extern void picoshell_dev_mount(void);
 extern void picoshell_bin_mount(void);
 
 // Add directories as needed.
+#ifdef USH_ENABLE_NODE_I2C
 extern void picoshell_i2c_mount(void);
+#endif
+#ifdef USH_ENABLE_NODE_TPS25750
 extern void picoshell_tps25750_mount(void);
+#endif
 
 void picoshell_init(void) {
   //begin serial interface.
@@ -64,8 +68,12 @@ void picoshell_init(void) {
   picoshell_root_mount();
   picoshell_dev_mount();
   picoshell_bin_mount();
+#ifdef USH_ENABLE_NODE_I2C
   picoshell_i2c_mount();
+#endif
+#ifdef USH_ENABLE_NODE_TPS25750
   picoshell_tps25750_mount();
+#endif
 }
 
 void picoshell_service() {
