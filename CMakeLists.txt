@@ -14,7 +14,6 @@ endif()
 # ====================================================================================
 cmake_minimum_required(VERSION 3.13)
 
-set(NAME my_project) # <-- change as needed.
 set(PICO_BOARD pico CACHE STRING "Board type")
 
 # Allow projects to point at a pre-built picotool to avoid network fetches.
@@ -36,8 +35,8 @@ endif()
 # project()
 include(pico_sdk_import.cmake)
 
-# boilerplate
-project(${NAME} C CXX ASM)
+project(my_project LANGUAGES C CXX ASM) # <-- change the project name here as needed.
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -45,24 +44,23 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 # Main application sources
-add_executable(${NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
-# Include directories
-add_subdirectory(./i2c)
-add_subdirectory(./ap33772)
-add_subdirectory(./stusb4500)
-add_subdirectory(./ssd1306)
-add_subdirectory(./ush)
-add_subdirectory(./lcd/i2c_lcd)
-add_subdirectory(./tps25750)
+set(DRIVER_DIRS
+    i2c
+    ap33772
+    stusb4500
+    ssd1306
+    ush
+    lcd/i2c_lcd
+    tps25750
+)
 
-# Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(${NAME} 0)
-pico_enable_stdio_usb(${NAME} 1)
+foreach(dir ${DRIVER_DIRS})
+    add_subdirectory(${dir})
+endforeach()
 
-
-target_link_libraries(${NAME}
-    pico_stdlib
+set(DRIVER_LIBS
     i2c
     ap33772
     stusb4500
@@ -72,11 +70,22 @@ target_link_libraries(${NAME}
     tps25750
 )
 
+# Modify the below lines to enable/disable output over UART/USB
+pico_enable_stdio_uart(${PROJECT_NAME} 0)
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+
+
+target_link_libraries(${PROJECT_NAME}
+    pico_stdlib
+    hardware_i2c
+    ${DRIVER_LIBS}
+)
+
 # create map/bin/hex/uf2 file in addition to ELF
-pico_add_extra_outputs(${NAME})
+pico_add_extra_outputs(${PROJECT_NAME})
 
 # Set up files for the release packages
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.uf2
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.uf2
               ${CMAKE_CURRENT_LIST_DIR}/README.md DESTINATION .)
 
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
