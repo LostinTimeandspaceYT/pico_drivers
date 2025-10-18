@@ -434,7 +434,14 @@ Driver for the STUSB4500, a USB-PD Sink Controller made by STMicroelectronics. T
 
 THE TPS25750 is Dual Role Port (DRP) USB-PD controller with integrated power paths with support for dead-battery mode. The module I used for writing the code was the [USB Power Click from Mikroe Electronics](https://www.mikroe.com/usb-c-power-click). The TPS25750 includes a number of GPIO pins for additional customization such as indictator LEDs or switches.
 
-**NOTE:** This library is a WIP.
+The driver now exposes a higher-level shell interface under `/tps25750` so you can query and exercise the controller live:
+
+- `status` dumps the consolidated register snapshot (MODE, STATUS, POWER_PATH, interrupts, etc.).
+- `power_status` decodes `POWER_STATUS` into human-readable flags (sourcing/sinking VBUS, VBUS present, VCONN, and more).
+- `pdo [source|sink]` prints the most recently received PD capabilities with decoded voltage/current values.
+- `cmd`, `data_write`, `data_read`, `power_control`, `write` provide quick access to the CMD1/DATA1 interface and raw register reads/writes.
+
+**NOTE:** This library is a WIP. The TPS25750 requires a TI-generated patch/application image (typically stored in the 0x50 EEPROM) before the PD state machine becomes active and the shell commands report meaningful data.
 
 *via Texas Instruments*
 >The TPS25750 is a highly integrated stand-alone USB Type-C and Power Delivery (PD) controller optimized for applications supporting USB-C PD Power. The TPS25750 integrates fully managed power paths with robust protection for a complete USB-C PD solution. The TPS25750 also integrates control for external battery charger ICs for added ease of use and reduced time to market.
