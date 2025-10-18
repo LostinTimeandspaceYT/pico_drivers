@@ -103,7 +103,7 @@
  * The PD controller does not take immediate action upon writing. Changes made 
  * to this register take effect the next time in the appropriate policy is invoked.
  * */
-#define USB_PD_POWER CONTROL (0x29)
+#define USB_PD_POWER_CONTROL (0x29)
 
 /*
  * Access: RO
