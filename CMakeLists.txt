@@ -15,7 +15,22 @@ endif()
 cmake_minimum_required(VERSION 3.13)
 
 set(NAME my_project) # <-- change as needed.
-set(PICO_BOARD pico2 CACHE STRING "Board type")
+set(PICO_BOARD pico CACHE STRING "Board type")
+
+# Allow projects to point at a pre-built picotool to avoid network fetches.
+set(PICO_PREFETCHED_PICOTOOL_PATH "" CACHE PATH
+    "Optional path to an existing picotool install directory")
+if(PICO_PREFETCHED_PICOTOOL_PATH STREQUAL "" AND DEFINED ENV{PICO_PREFETCHED_PICOTOOL_PATH})
+    set(PICO_PREFETCHED_PICOTOOL_PATH $ENV{PICO_PREFETCHED_PICOTOOL_PATH})
+endif()
+if(PICO_PREFETCHED_PICOTOOL_PATH AND EXISTS "${PICO_PREFETCHED_PICOTOOL_PATH}/picotool/picotool")
+    set(PICOTOOL_FETCH_FROM_GIT_PATH "${PICO_PREFETCHED_PICOTOOL_PATH}" CACHE PATH
+        "Directory where picotool has been installed" FORCE)
+elseif(PICO_PREFETCHED_PICOTOOL_PATH)
+    message(WARNING "PICO_PREFETCHED_PICOTOOL_PATH='${PICO_PREFETCHED_PICOTOOL_PATH}' "
+            "does not appear to contain a picotool installation (expected picotool/picotool). "
+            "Falling back to Pico SDK default behaviour.")
+endif()
 
 # initialize the SDK based on PICO_SDK_PATH note: this must happen before
 # project()
@@ -29,44 +44,8 @@ set(CMAKE_CXX_STANDARD 17)
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Add source files here
-add_executable(${NAME} main.cpp # <-- add source files here!
-  ush/ush.c
-  ush/ush_read.c
-  ush/ush_read_utils.c
-  ush/ush_read_char.c
-  ush/ush_parse.c
-  ush/ush_parse_char.c
-  ush/ush_parse_utils.c
-  ush/ush_write.c
-  ush/ush_write_utils.c
-  ush/ush_prompt.c
-  ush/ush_reset.c
-  ush/ush_file.c
-  ush/ush_node.c
-  ush/ush_node_utils.c
-  ush/ush_node_mount.c
-  ush/ush_utils.c
-  ush/ush_commands.c
-  ush/ush_process.c
-  ush/ush_autocomp.c
-  ush/ush_autocomp_utils.c
-  ush/ush_autocomp_state.c
-  ush/commands/ush_cmd.c
-  ush/commands/ush_cmd_cd.c
-  ush/commands/ush_cmd_help.c
-  ush/commands/ush_cmd_ls.c
-  ush/commands/ush_cmd_pwd.c
-  ush/commands/ush_cmd_cat.c
-  ush/commands/ush_cmd_xxd.c
-  ush/commands/ush_cmd_echo.c
-  ush/picoshell.cpp
-  ush/picoshell_cmd.cpp
-  ush/node_root.cpp
-  ush/node_bin.cpp
-  ush/node_dev.cpp
-  ush/node_i2c.cpp
-)
+# Main application sources
+add_executable(${NAME} main.cpp)
 
 # Include directories
 add_subdirectory(./i2c)
@@ -75,20 +54,22 @@ add_subdirectory(./stusb4500)
 add_subdirectory(./ssd1306)
 add_subdirectory(./ush)
 add_subdirectory(./lcd/i2c_lcd)
+add_subdirectory(./tps25750)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(${NAME} 0)
 pico_enable_stdio_usb(${NAME} 1)
 
 
-target_link_libraries(${NAME} 
-    pico_stdlib 
-    i2c 
-    ap33772 
-    stusb4500 
-    ssd1306 
+target_link_libraries(${NAME}
+    pico_stdlib
+    i2c
+    ap33772
+    stusb4500
+    ssd1306
     ush
     i2c_lcd
+    tps25750
 )
 
 # create map/bin/hex/uf2 file in addition to ELF
