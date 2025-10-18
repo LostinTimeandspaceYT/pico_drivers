@@ -220,6 +220,22 @@ bool TPS25750::read_register_block(uint8_t reg, uint8_t *buffer, size_t length) 
   return read_bytes(reg, buffer, length);
 }
 
+bool TPS25750::write_register_block(uint8_t reg, const uint8_t *buffer,
+                                    size_t length) {
+  return write_bytes(reg, buffer, length);
+}
+
+TPS25750::PowerStatusDecoded TPS25750::decode_power_status(uint16_t raw) const {
+  PowerStatusDecoded decoded;
+  decoded.sourcing_high_voltage = (raw & (1u << 5)) != 0u;
+  decoded.sourcing_vbus = (raw & (1u << 4)) != 0u;
+  decoded.vbus_present = (raw & (1u << 2)) != 0u;
+  decoded.vbus_detect_enabled = (raw & (1u << 3)) != 0u;
+  decoded.vconn_present = (raw & (1u << 1)) != 0u;
+  decoded.sinking_vbus = (raw & (1u << 0)) != 0u;
+  return decoded;
+}
+
 bool TPS25750::write_primary_data(const uint8_t *payload, size_t length) {
   if (payload == nullptr || length > PRIMARY_DATA_REGISTER_SIZE) {
     return false;

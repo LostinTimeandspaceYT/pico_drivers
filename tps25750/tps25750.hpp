@@ -93,6 +93,15 @@ class TPS25750 {
   using CustomerUseRegister = RegisterArray<8>;
   using GpioStatusRegister = RegisterArray<8>;
 
+  struct PowerStatusDecoded {
+    bool sourcing_high_voltage = false;
+    bool sourcing_vbus = false;
+    bool vbus_present = false;
+    bool vbus_detect_enabled = false;
+    bool vconn_present = false;
+    bool sinking_vbus = false;
+  };
+
   struct PortStatusSnapshot {
     uint32_t mode = 0;
     StatusRegister status{};
@@ -177,6 +186,9 @@ class TPS25750 {
 
   /** @brief Raw register block read helper exposed for shell/debug utilities. */
   bool read_register_block(uint8_t reg, uint8_t *buffer, size_t length);
+  bool write_register_block(uint8_t reg, const uint8_t *buffer, size_t length);
+
+  PowerStatusDecoded decode_power_status(uint16_t raw) const;
 
   /**
    * @brief Write payload into DATA1 register (0x09).

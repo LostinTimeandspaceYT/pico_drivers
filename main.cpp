@@ -27,6 +27,6 @@ void setup() {
 
   oled_display.clear_buffer();
   oled_display.print(0, 0,
-                     reinterpret_cast<uint8_t *>(const_cast<char *>("TPS25750 Demo")));
+                     reinterpret_cast<uint8_t *>(const_cast<char *>("TPS25750     Demo")));
   oled_display.show();
 }
