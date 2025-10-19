@@ -62,6 +62,8 @@ class I2C {
   void set_bits(uint8_t address, uint8_t reg, uint8_t shift, uint8_t mask = 0b1);
   void clear_bits(uint8_t address, uint8_t reg, uint8_t shift, uint8_t mask = 0b1);
 
+  i2c_inst_t *handle() const { return i2c; }
+
  private:
   void init();
 };
