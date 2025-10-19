@@ -47,10 +47,8 @@ extern "C" {
  *
  * @return ush_status_t - USH_STATUS_OK when successful, otherwise error
  */
-ush_status_t ush_node_mount(struct ush_object *self, const char *path,
-                            struct ush_node_object *node,
-                            const struct ush_file_descriptor *file_list,
-                            size_t file_list_size);
+ush_status_t ush_node_mount(struct ush_object *self, const char *path, struct ush_node_object *node,
+                            const struct ush_file_descriptor *file_list, size_t file_list_size);
 
 /**
  * @brief Unmount node path from shell.
@@ -88,8 +86,7 @@ ush_status_t ush_node_set_current_dir(struct ush_object *self, const char *path)
  * @param in_path - pointer to input path name
  * @param abs_path - pointer to variable where absolute path will be placed
  */
-void ush_node_get_absolute_path(struct ush_object *self, const char *in_path,
-                                char *abs_path);
+void ush_node_get_absolute_path(struct ush_object *self, const char *in_path, char *abs_path);
 
 /**
  * @brief Deinitialize node recursively.
@@ -117,8 +114,7 @@ void ush_node_deinit_recursive(struct ush_object *self, struct ush_node_object *
  *
  * @return pointer to ush node object when successful, otherwise NULL
  */
-struct ush_node_object *ush_node_get_parent_by_path(struct ush_object *self,
-                                                    const char *path);
+struct ush_node_object *ush_node_get_parent_by_path(struct ush_object *self, const char *path);
 
 /**
  * @brief Get node by path.

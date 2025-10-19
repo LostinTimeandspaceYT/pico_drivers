@@ -44,8 +44,7 @@ extern "C" {
  *
  * @return pointer to ush file descriptor when successful, otherwise NULL
  */
-struct ush_file_descriptor const *ush_file_find_by_name(struct ush_object *self,
-                                                        const char *name);
+struct ush_file_descriptor const *ush_file_find_by_name(struct ush_object *self, const char *name);
 
 #ifdef __cplusplus
 }

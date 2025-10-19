@@ -7,11 +7,11 @@
 #define PICOSHELL_H
 
 #include "pico/stdlib.h"
+#include "ush.h"
+#include "ush_node.h"
+#include "ush_types.h"
 #include <stdio.h>
 #include <string.h>
-#include "ush.h"
-#include "ush_types.h"
-#include "ush_node.h"
 
 void picoshell_init(void);
 void picoshell_service(void);

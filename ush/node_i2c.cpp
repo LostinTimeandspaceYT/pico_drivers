@@ -1,6 +1,7 @@
 /** @file node_i2c.cpp
  *
- * @brief this module creates a CLI in picoshell for controlling the I2C peripherals on RP2 based boards.
+ * @brief this module creates a CLI in picoshell for controlling the I2C peripherals on RP2 based
+ * boards.
  *
  * @par
  * For more information about I2C, check the Pico SDK documentation.
@@ -8,19 +9,19 @@
  * @author Nathan Winslow, 2024
  */
 
+#include "hardware/gpio.h"
+#include "hardware/i2c.h"
+#include "pico/stdlib.h"
+#include "picoshell.h"
+#include "ush.h"
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "pico/stdlib.h"
-#include "hardware/gpio.h"
-#include "hardware/i2c.h"
-#include "picoshell.h"
 #include <pico_drivers/utils/common.hpp>
-#include "ush.h"
 
-static const uint i2c0_pins[] = {0,1,4,5,8,9,12,13,16,17,20,21};
-static const uint i2c1_pins[] = {2,3,6,7,10,11,14,15,18,19,26,27};
+static const uint i2c0_pins[] = {0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21};
+static const uint i2c1_pins[] = {2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 26, 27};
 
 /* Shell flags */
 static bool i2c0_is_init = false;
@@ -29,272 +30,265 @@ static bool i2c1_is_init = false;
 /* Helper functions */
 bool reserved_addr(uint8_t addr) { return (addr & 0x78) == 0 || (addr & 0x78) == 0x78; }
 
-i2c_inst_t* pin_to_inst(uint pin) { return ((pin >> 1) & 0b1) ? i2c1 : i2c0; }
-
+i2c_inst_t *pin_to_inst(uint pin) { return ((pin >> 1) & 0b1) ? i2c1 : i2c0; }
 
 /* Callbacks */
-static void i2c_init_exec_callback(struct ush_object *self,
-                              struct ush_file_descriptor const *file, int argc,
-                              char *argv[]) {
+static void i2c_init_exec_callback(struct ush_object *self, struct ush_file_descriptor const *file,
+                                   int argc, char *argv[]) {
 
-  if (argc != 3) {
-    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    if (argc != 3) {
+        ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+        return;
+    }
+    uint sda = atoi(argv[1]);
+    if (sda >= 26 || sda < 0) {
+        ush_print(self, (char *)"ERROR: Invalid SDA pin");
+        return;
+    }
+
+    uint scl = atoi(argv[2]);
+    if (scl >= 27 || scl < 1) {
+        ush_print(self, (char *)"ERROR: Invalid SCL pin");
+        return;
+    }
+
+    i2c_inst_t *i2c = pin_to_inst(sda);
+    if (i2c == NULL) {
+        ush_print(self, (char *)"ERROR: Could not find I2C instance.");
+        return;
+    }
+
+    uint i2c_port = i2c_get_index(i2c);
+
+    if (i2c_port == 0 && i2c0_is_init) {
+        ush_print(self, (char *)"I2C0 port already initialized.\r\n");
+    } else if (i2c_port == 1 && i2c1_is_init) {
+        ush_print(self, (char *)"I2C1 port already initialized.\r\n");
+    } else {
+        i2c_init(i2c, 400 * 1000); // defaults to 400KHz baudrate
+        gpio_set_function(sda, GPIO_FUNC_I2C);
+        gpio_set_function(scl, GPIO_FUNC_I2C);
+        gpio_pull_up(sda);
+        gpio_pull_up(scl);
+        i2c_port == 1 ? i2c1_is_init = true : i2c0_is_init = true;
+        ush_printf(self, "I2C port %i initialized\r\n", i2c_port);
+    }
     return;
-  }
-  uint sda = atoi(argv[1]);
-  if (sda >= 26 || sda < 0) {
-    ush_print(self, (char*)"ERROR: Invalid SDA pin");
-    return;
-  }
-
-  uint scl = atoi(argv[2]);
-  if (scl >= 27 || scl < 1) {
-    ush_print(self, (char*)"ERROR: Invalid SCL pin");
-    return;
-  }
-
-  i2c_inst_t* i2c = pin_to_inst(sda);
-  if (i2c == NULL) {
-    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
-    return;
-  }
-
-  uint i2c_port = i2c_get_index(i2c);
-
-  if (i2c_port == 0 && i2c0_is_init) {
-    ush_print(self, (char*)"I2C0 port already initialized.\r\n");
-  } 
-  else if (i2c_port == 1 && i2c1_is_init) {
-    ush_print(self, (char*)"I2C1 port already initialized.\r\n");
-  }
-  else {
-    i2c_init(i2c, 400 * 1000); //defaults to 400KHz baudrate
-    gpio_set_function(sda, GPIO_FUNC_I2C);
-    gpio_set_function(scl, GPIO_FUNC_I2C);
-    gpio_pull_up(sda);
-    gpio_pull_up(scl);
-    i2c_port == 1 ? i2c1_is_init = true : i2c0_is_init = true;
-    ush_printf(self, "I2C port %i initialized\r\n", i2c_port);
-  }
-  return;
 }
-
 
 static void i2c_deinit_exec_callback(struct ush_object *self,
-                              struct ush_file_descriptor const *file, int argc,
-                              char *argv[]) {
-  if (argc != 2) {
-    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
-    return;
-  }
-
-  int port_num = atoi(argv[1]);
-  port_num >= 1 ? port_num = 1 : port_num = 0;
-
-  if (!i2c0_is_init && port_num == 0) {
-    ush_print(self, (char*)"ERROR: I2C port 0 must be initialized before deinitializing.\r\n");
-    return;
-  }
-
-  if (!i2c1_is_init && port_num == 1) {
-    ush_print(self, (char*)"ERROR: I2C port 1 must be initialized before deinitializing.\r\n");
-    return;
-  }
-
-  i2c_inst_t* i2c = i2c_get_instance(port_num);
-  if (i2c == NULL) {
-    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
-    return;
-  }
-
-  i2c_deinit(i2c);
-#if PICO_2040 //WARN: This code ONLY works on the RP2040
-  if (port_num == 0) {
-    for (int i = 0; i < sizeof(i2c0_pins); ++i) {
-      if (gpio_get_function(i2c0_pins[i] == GPIO_FUNC_I2C)) {
-        gpio_set_function(i2c0_pins[i], GPIO_FUNC_NULL);
-        gpio_disable_pulls(i2c0_pins[i]);
-      }
+                                     struct ush_file_descriptor const *file, int argc,
+                                     char *argv[]) {
+    if (argc != 2) {
+        ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+        return;
     }
-    i2c0_is_init = false;
-  } 
-  else {
-    for (int i = 0; i < sizeof(i2c1_pins); ++i) {
-      if (gpio_get_function(i2c1_pins[i] == GPIO_FUNC_I2C)) {
-        gpio_set_function(i2c1_pins[i], GPIO_FUNC_NULL);
-        gpio_disable_pulls(i2c1_pins[i]);
-      }
+
+    int port_num = atoi(argv[1]);
+    port_num >= 1 ? port_num = 1 : port_num = 0;
+
+    if (!i2c0_is_init && port_num == 0) {
+        ush_print(self, (char *)"ERROR: I2C port 0 must be initialized before deinitializing.\r\n");
+        return;
     }
-    i2c1_is_init = false;
-  }
+
+    if (!i2c1_is_init && port_num == 1) {
+        ush_print(self, (char *)"ERROR: I2C port 1 must be initialized before deinitializing.\r\n");
+        return;
+    }
+
+    i2c_inst_t *i2c = i2c_get_instance(port_num);
+    if (i2c == NULL) {
+        ush_print(self, (char *)"ERROR: Could not find I2C instance.");
+        return;
+    }
+
+    i2c_deinit(i2c);
+#if PICO_2040 // WARN: This code ONLY works on the RP2040
+    if (port_num == 0) {
+        for (int i = 0; i < sizeof(i2c0_pins); ++i) {
+            if (gpio_get_function(i2c0_pins[i] == GPIO_FUNC_I2C)) {
+                gpio_set_function(i2c0_pins[i], GPIO_FUNC_NULL);
+                gpio_disable_pulls(i2c0_pins[i]);
+            }
+        }
+        i2c0_is_init = false;
+    } else {
+        for (int i = 0; i < sizeof(i2c1_pins); ++i) {
+            if (gpio_get_function(i2c1_pins[i] == GPIO_FUNC_I2C)) {
+                gpio_set_function(i2c1_pins[i], GPIO_FUNC_NULL);
+                gpio_disable_pulls(i2c1_pins[i]);
+            }
+        }
+        i2c1_is_init = false;
+    }
 #else
-  port_num == 0 ? i2c0_is_init = false : i2c1_is_init = false;
+    port_num == 0 ? i2c0_is_init = false : i2c1_is_init = false;
 #endif
 
-  return;
+    return;
 }
 
-static void i2c_scan_exec_callback(struct ush_object *self,
-                              struct ush_file_descriptor const *file, int argc,
-                              char *argv[]) {
-  if (argc != 2) {
-    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
-    return;
-  }
-  uint port = atoi(argv[1]);
-
-  i2c_inst_t* i2c = i2c_get_instance(port);
-  if (i2c == NULL) {
-    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
-    return;
-  }
-
-  if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
-    ush_print(self, (char*)"ERROR: I2C port must be initialized before scanning.\r\n");
-    return;
-  }
-
-  //NOTE: A bit of delay is added to prevent the serial port from hanging.
-  int await = millis();
-  while (millis() - await < 5);
-
-  //NOTE: This is a refactor of `bus_scan.c` from the pico-examples
-  ush_printf(self, "...I2C Bus Scan...\n");
-  ush_printf(self, "   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \n");
-  for (int addr = 0; addr < (1 << 7); ++addr) {
-    if (addr % 16 == 0) ush_printf(self, "%02x ", addr);
-    int ret;
-    uint8_t rxdata;
-
-    //TODO: change read_blocking to a read_until and return error if timedout.
-    if (reserved_addr(addr)) {
-      ret = PICO_ERROR_GENERIC;
-    } else {
-      ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
+static void i2c_scan_exec_callback(struct ush_object *self, struct ush_file_descriptor const *file,
+                                   int argc, char *argv[]) {
+    if (argc != 2) {
+        ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+        return;
     }
-    ush_printf(self, ret < 0 ? "." : "@");
-    ush_printf(self, addr % 16 == 15 ? "\n" : "  ");
-  }
-  ush_printf(self, "...Done with i2c scan...\n");
-  ush_flush(self);
-  return;
+    uint port = atoi(argv[1]);
+
+    i2c_inst_t *i2c = i2c_get_instance(port);
+    if (i2c == NULL) {
+        ush_print(self, (char *)"ERROR: Could not find I2C instance.");
+        return;
+    }
+
+    if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
+        ush_print(self, (char *)"ERROR: I2C port must be initialized before scanning.\r\n");
+        return;
+    }
+
+    // NOTE: A bit of delay is added to prevent the serial port from hanging.
+    int await = millis();
+    while (millis() - await < 5)
+        ;
+
+    // NOTE: This is a refactor of `bus_scan.c` from the pico-examples
+    ush_printf(self, "...I2C Bus Scan...\n");
+    ush_printf(self, "   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \n");
+    for (int addr = 0; addr < (1 << 7); ++addr) {
+        if (addr % 16 == 0)
+            ush_printf(self, "%02x ", addr);
+        int ret;
+        uint8_t rxdata;
+
+        // TODO: change read_blocking to a read_until and return error if timedout.
+        if (reserved_addr(addr)) {
+            ret = PICO_ERROR_GENERIC;
+        } else {
+            ret = i2c_read_blocking(i2c, addr, &rxdata, 1, false);
+        }
+        ush_printf(self, ret < 0 ? "." : "@");
+        ush_printf(self, addr % 16 == 15 ? "\n" : "  ");
+    }
+    ush_printf(self, "...Done with i2c scan...\n");
+    ush_flush(self);
+    return;
 }
 
+static void i2c_write_exec_callback(struct ush_object *self, struct ush_file_descriptor const *file,
+                                    int argc, char *argv[]) {
+    if (argc != 5) {
+        ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+        return;
+    }
+    uint port = atoi(argv[1]);
 
-static void i2c_write_exec_callback(struct ush_object *self,
-                              struct ush_file_descriptor const *file, int argc,
-                              char *argv[]) {
-  if (argc != 5) {
-    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    i2c_inst_t *i2c = i2c_get_instance(port);
+    if (i2c == NULL) {
+        ush_print(self, (char *)"ERROR: Could not find I2C instance.");
+        return;
+    }
+
+    if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
+        ush_printf(self, "ERROR: I2C port %d must be initialized before reading.\r\n", port);
+        return;
+    }
+
+    // NOTE: A bit of delay is added to prevent the serial port from hanging.
+    int await = millis();
+    while (millis() - await < 5)
+        ;
+
+    // NOTE: strtol is used cuz we expect the address in hexadecimal.
+    uint address = (uint)strtol(argv[2], NULL, 16);
+
+    uint buf_len = atoi(argv[3]);
+
+    long data = strtol(argv[4], NULL, 16);
+
+    ush_printf(self, "sending 0x%X to address: 0x%X\n", data, address);
+
+    i2c_write_blocking(i2c, address, (uint8_t *)&data, buf_len, false);
+
     return;
-  }
-  uint port = atoi(argv[1]);
-
-  i2c_inst_t* i2c = i2c_get_instance(port);
-  if (i2c == NULL) {
-    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
-    return;
-  }
-
-  if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
-    ush_printf(self, "ERROR: I2C port %d must be initialized before reading.\r\n", port);
-    return;
-  }
-
-  //NOTE: A bit of delay is added to prevent the serial port from hanging.
-  int await = millis();
-  while (millis() - await < 5);
-
-  //NOTE: strtol is used cuz we expect the address in hexadecimal.
-  uint address = (uint)strtol(argv[2], NULL, 16);
-
-  uint buf_len = atoi(argv[3]);
-
-  long data = strtol(argv[4], NULL, 16);
-
-  ush_printf(self, "sending 0x%X to address: 0x%X\n", data, address);
-
-  i2c_write_blocking(i2c, address, (uint8_t*)&data, buf_len, false);
-
-  return;
 }
 
-static void i2c_read_exec_callback(struct ush_object *self,
-                              struct ush_file_descriptor const *file, int argc,
-                              char *argv[]) {
+static void i2c_read_exec_callback(struct ush_object *self, struct ush_file_descriptor const *file,
+                                   int argc, char *argv[]) {
 
-  if (argc != 4) {
-    ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+    if (argc != 4) {
+        ush_print_status(self, USH_STATUS_ERROR_COMMAND_WRONG_ARGUMENTS);
+        return;
+    }
+    uint port = atoi(argv[1]);
+
+    i2c_inst_t *i2c = i2c_get_instance(port);
+    if (i2c == NULL) {
+        ush_print(self, (char *)"ERROR: Could not find I2C instance.");
+        return;
+    }
+
+    if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
+        ush_printf(self, "ERROR: I2C port %d must be initialized before reading.\r\n", port);
+        return;
+    }
+
+    int await = millis();
+    while (millis() - await < 5)
+        ;
+
+    uint address = (uint)strtol(argv[2], NULL, 16);
+    uint buf_len = atoi(argv[3]);
+    uint8_t buf[buf_len];
+
+    i2c_read_blocking(i2c, address, buf, buf_len, false);
+    for (int i = 0; i < sizeof(buf); ++i) {
+        ush_printf(self, "0x%X, ", buf[i]);
+    }
+    ush_printf(self, "\r\n%X: %s\r\n", address, buf);
     return;
-  }
-  uint port = atoi(argv[1]);
-
-  i2c_inst_t* i2c = i2c_get_instance(port);
-  if (i2c == NULL) {
-    ush_print(self, (char*)"ERROR: Could not find I2C instance.");
-    return;
-  }
-
-  if ((port == 0 && !i2c0_is_init) || (port == 1 && !i2c1_is_init)) {
-    ush_printf(self, "ERROR: I2C port %d must be initialized before reading.\r\n", port);
-    return;
-  }
-
-  int await = millis();
-  while (millis() - await < 5);
-
-  uint address = (uint)strtol(argv[2], NULL, 16);
-  uint buf_len = atoi(argv[3]);
-  uint8_t buf[buf_len];
-
-  i2c_read_blocking(i2c, address, buf, buf_len, false);
-  for (int i = 0; i < sizeof(buf); ++i) {
-    ush_printf(self, "0x%X, ", buf[i]);
-  }
-  ush_printf(self, "\r\n%X: %s\r\n", address, buf);
-  return;
 }
-
 
 // i2c directory handler
 static struct ush_node_object i2c;
 
 // i2c directory files descriptor
 static const struct ush_file_descriptor i2c_files[] = {
-  {
-    .name = "init",
-    .description = "Initialize I2C",
-    .help = "Initializes I2C port on pins SDA & SCL\r\nUsage: init [SDA] [SCL]\r\n",
-    .exec = i2c_init_exec_callback,
-  },
-  {
-    .name = "deinit",
-    .description = "Deinitialize I2C",
-    .help = "Deinitializes I2C port 0 or 1\r\nUsage: deinit [0|1]\r\n\n",
-    .exec = i2c_deinit_exec_callback,
-  },
-  {
-    .name = "scan",
-    .description = "Scan the desired I2C port",
-    .help = "Scans the I2C bus for any available devices.\r\nUsage: scan [0|1]\r\n\n",
-    .exec = i2c_scan_exec_callback,
-  },
-  {
-    .name = "write",
-    .description = "Write hex data to I2C device",
-    .help = "Usage: write [port 0|1] [addr] [dat_len] [data]\r\n",
-    .exec = i2c_write_exec_callback,
-  },
-  {
-    .name = "read",
-    .description = "read hex data from I2C device",
-    .help = "Usage: read [port 0|1] [addr] [num_bytes]\r\nExample: read 0 27 2\r\nRead 2 bytes from address 0x27 on port 0\r\n",
-    .exec = i2c_read_exec_callback,
-  }
-};
+    {
+        .name = "init",
+        .description = "Initialize I2C",
+        .help = "Initializes I2C port on pins SDA & SCL\r\nUsage: init [SDA] [SCL]\r\n",
+        .exec = i2c_init_exec_callback,
+    },
+    {
+        .name = "deinit",
+        .description = "Deinitialize I2C",
+        .help = "Deinitializes I2C port 0 or 1\r\nUsage: deinit [0|1]\r\n\n",
+        .exec = i2c_deinit_exec_callback,
+    },
+    {
+        .name = "scan",
+        .description = "Scan the desired I2C port",
+        .help = "Scans the I2C bus for any available devices.\r\nUsage: scan [0|1]\r\n\n",
+        .exec = i2c_scan_exec_callback,
+    },
+    {
+        .name = "write",
+        .description = "Write hex data to I2C device",
+        .help = "Usage: write [port 0|1] [addr] [dat_len] [data]\r\n",
+        .exec = i2c_write_exec_callback,
+    },
+    {
+        .name = "read",
+        .description = "read hex data from I2C device",
+        .help = "Usage: read [port 0|1] [addr] [num_bytes]\r\nExample: read 0 27 2\r\nRead 2 bytes "
+                "from address 0x27 on port 0\r\n",
+        .exec = i2c_read_exec_callback,
+    }};
 
 extern struct ush_object ush;
 
 void picoshell_i2c_mount(void) {
-  ush_node_mount(&ush, "/i2c", &i2c, i2c_files, sizeof(i2c_files) / sizeof(i2c_files[0]));
+    ush_node_mount(&ush, "/i2c", &i2c, i2c_files, sizeof(i2c_files) / sizeof(i2c_files[0]));
 }

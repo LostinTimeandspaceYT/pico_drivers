@@ -60,8 +60,8 @@ extern "C" {
 #define USH_CONFIG_TRANSLATION_FILE_NOT_FOUND "file not found"
 #define USH_CONFIG_TRANSLATION_READ_ONLY_FILE "read only file"
 
-#define USH_ASSERT(cond) \
-  {}
+#define USH_ASSERT(cond)                                                                           \
+    {}
 
 #ifdef __cplusplus
 }

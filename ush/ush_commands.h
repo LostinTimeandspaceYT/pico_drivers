@@ -52,8 +52,7 @@ extern const size_t g_ush_buildin_commands_num;
  * @return ush_status_t - USH_STATUS_OK when successful, otherwise error
  */
 ush_status_t ush_commands_add(struct ush_object *self, struct ush_node_object *node,
-                              const struct ush_file_descriptor *file_list,
-                              size_t file_list_size);
+                              const struct ush_file_descriptor *file_list, size_t file_list_size);
 
 /**
  * @brief Remove global commands.

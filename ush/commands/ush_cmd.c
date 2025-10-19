@@ -29,8 +29,8 @@ SOFTWARE.
 
 #if USH_CONFIG_ENABLE_COMMAND_HELP == 1
 extern void ush_buildin_cmd_help_callback(struct ush_object *self,
-                                          struct ush_file_descriptor const *file,
-                                          int argc, char *argv[]);
+                                          struct ush_file_descriptor const *file, int argc,
+                                          char *argv[]);
 extern void ush_buildin_cmd_help_service(struct ush_object *self,
                                          struct ush_file_descriptor const *file);
 #endif /* USH_CONFIG_ENABLE_COMMAND_HELP */
@@ -73,8 +73,8 @@ extern void ush_buildin_cmd_xxd_service(struct ush_object *self,
 
 #if USH_CONFIG_ENABLE_COMMAND_ECHO == 1
 extern void ush_buildin_cmd_echo_callback(struct ush_object *self,
-                                          struct ush_file_descriptor const *file,
-                                          int argc, char *argv[]);
+                                          struct ush_file_descriptor const *file, int argc,
+                                          char *argv[]);
 #endif /* USH_CONFIG_ENABLE_COMMAND_ECHO */
 
 const struct ush_file_descriptor g_ush_buildin_commands[] = {
