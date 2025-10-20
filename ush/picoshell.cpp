@@ -1,5 +1,10 @@
 #include "picoshell.h"
 
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+
+
 // working buffers allocations (size could be customized)
 #define BUF_IN_SIZE 512
 #define BUF_OUT_SIZE 512
@@ -7,10 +12,11 @@
 
 static char ush_in_buf[BUF_IN_SIZE];
 static char ush_out_buf[BUF_OUT_SIZE];
-static char hostname[] = "Pico2"; // Change to your platform of choice
+static char hostname[] = "Pico"; // Change to your platform of choice
 
 // Picoshell instance handler
 struct ush_object ush;
+
 
 // non-blocking read interface
 static int ush_read(struct ush_object *self, char *ch) {
@@ -53,9 +59,15 @@ extern void picoshell_bin_mount(void);
 #ifdef USH_ENABLE_NODE_I2C
 extern void picoshell_i2c_mount(void);
 #endif
+
 #ifdef USH_ENABLE_NODE_TPS25750
 extern void picoshell_tps25750_mount(void);
 #endif
+
+#ifdef USH_ENABLE_NODE_DISPLAY_SSD1306
+extern void picoshell_display_ssd1306_mount(void);
+#endif
+
 
 void picoshell_init(void) {
     // begin serial interface.
@@ -68,6 +80,9 @@ void picoshell_init(void) {
     picoshell_root_mount();
     picoshell_dev_mount();
     picoshell_bin_mount();
+#ifdef USH_ENABLE_NODE_DISPLAY_SSD1306
+    picoshell_display_ssd1306_mount();
+#endif
 #ifdef USH_ENABLE_NODE_I2C
     picoshell_i2c_mount();
 #endif
