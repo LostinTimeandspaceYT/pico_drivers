@@ -38,6 +38,7 @@ set(USH_SOURCES
 set(USH_LINK_LIBS
   pico_stdlib
   pico_drivers::utils
+  pico_drivers::display::ssd1306
 )
 
 set(USH_DEFINES)
@@ -46,6 +47,11 @@ if("i2c" IN_LIST DRIVER_LIBS)
   list(APPEND USH_SOURCES node_i2c.cpp)
   list(APPEND USH_LINK_LIBS hardware_i2c pico_drivers::i2c)
   list(APPEND USH_DEFINES USH_ENABLE_NODE_I2C)
+endif()
+
+if("ssd1306" IN_LIST DRIVER_LIBS)
+  list(APPEND USH_SOURCES node_oled.cpp)
+  list(APPEND USH_DEFINES USH_ENABLE_NODE_DISPLAY_SSD1306)
 endif()
 
 if("tps25750" IN_LIST DRIVER_LIBS)
