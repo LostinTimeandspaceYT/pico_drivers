@@ -13,6 +13,8 @@ target_link_libraries(ssd1306
         pico_stdlib
         pico_drivers::i2c
         hardware_dma
+        hardware_spi
+        hardware_gpio
 )
 
 add_library(pico_drivers::display::ssd1306 ALIAS ssd1306)
