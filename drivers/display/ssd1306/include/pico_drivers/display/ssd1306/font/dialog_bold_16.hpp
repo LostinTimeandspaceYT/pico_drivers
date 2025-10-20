@@ -1,6 +1,8 @@
 #ifndef _DIALOG_BOLD_16_H
 #define _DIALOG_BOLD_16_H
 
+#include <pico_drivers/display/gfx_font.hpp>
+
 const uint8_t Dialog_bold_16Bitmaps[] = {
 
     // Bitmap Data:

@@ -49,22 +49,7 @@ static constexpr uint8_t SET_COM_OUT_DIR_REVERSE = 0xC0;
 static constexpr uint8_t SET_COM_OUT_DIR_NORMAL = 0xC8;
 static constexpr uint8_t SET_VERTICAL_SCROLL_AREA = 0xA3;
 
-struct GFXglyph {
-  uint16_t bitmap_offset;  // Ptr into GFXfont->bitmap
-  uint8_t width;           // Bitmap dimensions in pixels
-  uint8_t height;
-  uint8_t x_advance;  // Distance to advance cursour (x-axis)
-  int8_t x_offset;    // Distance from cursor position to Upper Left corner
-  int8_t y_offset;
-};
 
-struct GFXfont {
-  uint8_t *bitmap;     // Glyph bitmaps, concatenated
-  GFXglyph *glyph;     // array of glyphs
-  uint8_t first_char;  // ASCII extents
-  uint8_t last_char;   // ASCII extents
-  uint8_t y_advance;   // distance to Newline
-};
 
 class OLED {
  public:
