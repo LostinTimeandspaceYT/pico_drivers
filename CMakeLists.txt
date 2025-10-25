@@ -60,6 +60,7 @@ set(DRIVER_MODULES
     # "ap33772:drivers/usb_pd/ap33772"
     # "stusb4500:drivers/usb_pd/stusb4500"
     "ssd1306:drivers/display/ssd1306"
+    "low_pass_filter:drivers/low_pass_filter"
     # "i2c_lcd:drivers/display/i2c_lcd"
     # "tps25750:drivers/usb_pd/tps25750"
 )
